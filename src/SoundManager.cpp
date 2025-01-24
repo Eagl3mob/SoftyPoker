@@ -1,27 +1,21 @@
-
-////Sound Manager cpp/////
-
-#include <filesystem>
 #include "SoundManager.h"
 #include <iostream>
-#include <random>
-namespace fs = std::filesystem;
+#include <random>  // Ensure this header is included
 
 void SoundManager::initializeAllSounds() {
-    fs::path basePath = fs::current_path() / "assets" / "sounds";
-    std::vector<std::pair<fs::path, sf::Sound&>> soundFiles = {
-        {basePath / "cardDeal.wav", cardDealSound},
-        {basePath / "held.wav", heldSound},
-        {basePath / "unheld.wav", unheldSound},
-        {basePath / "prize.wav", prizeSound},
-        {basePath / "count.wav", countSound},
-        {basePath / "lose.wav", loseSound},
-        {basePath / "win.wav", winSound}
+    std::vector<std::pair<std::string, sf::Sound&>> soundFiles = {
+        {"D:/Programming/Projects/Assets/sounds/cardDeal.wav", cardDealSound},
+        {"D:/Programming/Projects/Assets/sounds/held.wav", heldSound},
+        {"D:/Programming/Projects/Assets/sounds/unheld.wav", unheldSound},
+        {"D:/Programming/Projects/Assets/sounds/prize.wav", prizeSound},
+        {"D:/Programming/Projects/Assets/sounds/count.wav", countSound},
+        {"D:/Programming/Projects/Assets/sounds/lose.wav", loseSound},
+        {"D:/Programming/Projects/Assets/sounds/win.wav", winSound}
     };
 
     std::vector<sf::SoundBuffer> buffers(soundFiles.size());
     for (size_t i = 0; i < soundFiles.size(); i++) {
-        if (!buffers[i].loadFromFile(soundFiles[i].first.string())) {
+        if (!buffers[i].loadFromFile(soundFiles[i].first)) {
             std::cerr << "Failed to load sound: " << soundFiles[i].first << std::endl;
             throw std::runtime_error("Failed to initialize sound.");
         }
@@ -31,26 +25,25 @@ void SoundManager::initializeAllSounds() {
     }
 
     // Load background music tracks
-    basePath = fs::current_path() / "assets" / "music";
     auto music1 = std::make_unique<sf::Music>();
     auto music2 = std::make_unique<sf::Music>();
     auto music3 = std::make_unique<sf::Music>();
     auto music4 = std::make_unique<sf::Music>();
     auto music5 = std::make_unique<sf::Music>();
 
-    if (!music1->openFromFile((basePath / "music1.ogg").string())) {
+    if (!music1->openFromFile("D:/Programming/Projects/Assets/music/music1.ogg")) {
         throw std::runtime_error("Failed to load music 1");
     }
-    if (!music2->openFromFile((basePath / "music2.ogg").string())) {
+    if (!music2->openFromFile("D:/Programming/Projects/Assets/music/music2.ogg")) {
         throw std::runtime_error("Failed to load music 2");
     }
-    if (!music3->openFromFile((basePath / "music3.ogg").string())) {
+    if (!music3->openFromFile("D:/Programming/Projects/Assets/music/music3.ogg")) {
         throw std::runtime_error("Failed to load music 3");
     }
-    if (!music4->openFromFile((basePath / "music4.ogg").string())) {
+    if (!music4->openFromFile("D:/Programming/Projects/Assets/music/music4.ogg")) {
         throw std::runtime_error("Failed to load music 4");
     }
-    if (!music5->openFromFile((basePath / "music5.ogg").string())) {
+    if (!music5->openFromFile("D:/Programming/Projects/Assets/music/music5.ogg")) {
         throw std::runtime_error("Failed to load music 5");
     }
 
@@ -64,7 +57,6 @@ void SoundManager::initializeAllSounds() {
         music->setVolume(100.0f); // Set volume for each music track
     }
 }
-
 
 void SoundManager::playRandomBackgroundMusic() {
     if (!musicTracks.empty()) {
@@ -101,5 +93,3 @@ void SoundManager::playSound(const std::string& soundName) {
 SoundManager::~SoundManager() {
     stopBackgroundMusic(); // Ensure music is stopped
 }
-
-

@@ -4,14 +4,22 @@
 #include "Card.h"
 #include "Deck.h"
 #include "SoundManager.h"
+#include "ButtonInputContext.h"
+//#include "UIHelper.h"
+//#include "AnimationHelper.h"
 #include <vector>
 #include <map>
 #include <thread>
 #include <random>
 #include <iostream>
+#include <filesystem>
 #include <ctime>
 #include <cstdlib>
 #include <unordered_set>
+#include <memory>
+
+
+namespace fs = std::filesystem;
 
 // Constants
 const float CARD_SCALE_FACTOR = 0.18f;
@@ -39,289 +47,141 @@ std::map<std::string, int> prizeMultipliers = {
     {"Straight", 11}, {"Three of a Kind", 7}, {"Two Pair", 3}, {"Jacks or Better", 1}
 };
 
-// ButtonInputContext struct
-struct ButtonInputContext {
-    const sf::Event& event;
-    std::vector<Card>& hand;
-    bool& canBet;
-    int& betAmount;
-    bool& canCollect;
-    int& prize;
-    int& playerCredits;
-    bool& drawFiveCards;
-    bool& roundInProgress;
-    bool& gameOver;
-    std::vector<Card>& deck;
-    sf::RenderWindow& window;
-    sf::Sprite& backgroundSprite;
-    sf::Text& creditsText;
-    sf::Text& betText;
-    bool& gameStarted;
-    std::vector<sf::Text>& prizeTexts;
-    const sf::Font& font;
-    sf::Sound& cardDealSound;
-    sf::Sound& heldSound;
-    sf::Sound& unheldSound;
-    sf::Sound& prizeSound;
-    sf::Sound& countSound;
-    sf::Text& instructions;
-    sf::Text& gameOverText;
-    bool& gamblingPhase;
-    SoundManager& soundManager;
-    sf::Text& creditsLabelText;
-    sf::Text& creditsValueText;
-    sf::Text& betLabelText;
-    sf::Text& betValueText;
-    const std::map<std::string, int>& prizeMultipliers;
-};
+
+
+
+
 
 // Function declarations
-
-
-
 std::vector<Card> createDeck();
 bool loadTexture(Card& card, const std::string& filePath);
 void shuffleDeck(std::vector<Card>& deck);
-void dealInitialHand(std::vector<Card>& deck, std::vector<Card>& hand, sf::RenderWindow& window, sf::Sprite& backgroundSprite, sf::Text& creditsText, sf::Text& betText, const std::vector<sf::Text>& prizeTexts, sf::Sound& cardDealSound);
-void redrawHand(std::vector<Card>& deck, std::vector<Card>& hand, sf::RenderWindow& window, sf::Sprite& backgroundSprite, sf::Text& creditsText, sf::Text& betText, const std::vector<sf::Text>& prizeTexts, sf::Sound& cardDealSound);
+void dealInitialHand(std::vector<Card>& deck, std::vector<Card>& hand, sf::RenderWindow& window, sf::Sprite& backgroundSprite, sf::Text& creditsText, sf::Text& betText, const std::vector<sf::Text>& prizeTexts);
+void redrawHand(std::vector<Card>& deck, std::vector<Card>& hand, sf::RenderWindow& window, sf::Sprite& backgroundSprite, sf::Text& creditsText, sf::Text& betText, const std::vector<sf::Text>& prizeTexts);
 void initializeGamblingGame(std::vector<Card>& deck, Card& currentCard);
 std::vector<Card> createGamblingDeck();
 void updateCardPositionsAndScales(std::vector<Card>& cards, sf::RenderWindow& window);
-
-
-
-
-
 void updateUI(sf::RenderWindow& window, sf::Sprite& backgroundSprite, sf::Text& instructions, sf::Text& creditsLabelText, sf::Text& creditsValueText, sf::Text& betLabelText, sf::Text& betValueText, const std::vector<sf::Text>& prizeTexts, const std::vector<Card>& hand, sf::Text& gameOverText, bool gameOver, int playerCredits, int betAmount);
-
-void updateUI(sf::RenderWindow& window, sf::Sprite& backgroundSprite, sf::Text& instructions, sf::Text& creditsLabelText, sf::Text& creditsValueText, sf::Text& betLabelText, sf::Text& betValueText, std::vector<sf::Text>& prizeTexts, std::vector<Card>& hand, sf::Text& gameOverText, bool gameOver, int playerCredits, int betAmount);
-void initializeAllSounds(sf::Sound& cardDealSound, sf::Sound& heldSound, sf::Sound& unheldSound, sf::Sound& prizeSound, sf::Sound& countSound, sf::Sound& loseSound, sf::Sound& winSound);
+void initializeAllSounds(sf::Sound& cardDealSound, sf::Sound& heldSound, sf::Sound& unheldSound, sf::Sound& countSound, sf::Sound& loseSound, sf::Sound& winSound);
 void drawHeldCardHighlight(sf::RenderWindow& window, const Card& card);
-
-
 int evaluateHand(const std::vector<Card>& hand, int betAmount);
 bool playGamblingRound(std::vector<Card>& deck, Card& currentCard, bool guessHigher, std::unordered_set<int>& usedCards);
-void resetGameState(int& playerCredits, int& betAmount, bool& canCollect, bool& drawFiveCards, std::vector<Card>& hand, std::vector<Card>& deck, std::vector<sf::Text>& prizeTexts, const sf::Font& font, sf::RenderWindow& window, int& prize, sf::Text& betText, sf::Text& creditsText, bool& gameStarted, bool& roundInProgress, bool& gameOver, bool& gamblingPhase, SoundManager& soundManager);
-void startGamblingPhase(sf::RenderWindow& window, sf::Sprite& backgroundSprite, sf::Text& creditsText, sf::Text& betText, std::vector<sf::Text>& prizeTexts, const sf::Font& font, int& prize, int& playerCredits, sf::Sound& countSound);
+void resetGameState(int& playerCredits, int& betAmount, bool& canCollect, bool& drawFiveCards, std::vector<Card>& hand, std::vector<Card>& deck, std::vector<sf::Text>& prizeTexts, const sf::Font& font, sf::RenderWindow& window, sf::Sprite& backgroundSprite, sf::Text& instructions, sf::Text& creditsLabelText, sf::Text& creditsValueText, sf::Text& betLabelText, sf::Text& betValueText, sf::Text& prizeValueOnlyText, SoundManager& soundManager);
+void startGamblingPhase(sf::RenderWindow& window, sf::Sprite& backgroundSprite, sf::Text& creditsText, sf::Text& betText, std::vector<sf::Text>& prizeTexts, const sf::Font& font, int& prize, int& playerCredits, sf::Sound& countSound, sf::Sound& loseSound, sf::Sound& winSound, std::vector<Card>& hand, bool& canBet);
 void initializePrizeSound(sf::Sound& prizeSound);
 float calculateScaleFactor(const sf::RenderWindow& window);
-void startGame(sf::RenderWindow& window, const sf::Font& font, std::vector<sf::Text>& prizeTexts, int betAmount, int prize, const std::map<std::string, int>& prizeMultipliers, sf::Sound& prizeSound, bool& canBet);
+void startGame(sf::RenderWindow& window, const sf::Font& font, std::vector<sf::Text>& prizeTexts, int betAmount, int prize, const std::map<std::string, int>& prizeMultipliers, bool& canBet);
 void handleBetPlacement(const sf::Event& event, bool& canBet, int& betAmount, int& playerCredits, std::vector<sf::Text>& prizeTexts, const sf::Font& font, sf::Text& betText, sf::RenderWindow& window, SoundManager& soundManager);
-
 void initializeUIElements(const sf::Font& font, sf::RenderWindow& window, sf::Text& betLabelText, sf::Text& betValueText, sf::Text& creditsLabelText, sf::Text& creditsValueText, sf::Text& prizeValueOnlyText);
-
 void animateLogo(sf::RenderWindow& window, sf::View& view, sf::Sprite& logoSprite, sf::Sprite& backgroundSprite, float speed, sf::Clock& clock);
 void handleResize(sf::RenderWindow& window, sf::View& view, sf::Sprite& backgroundSprite, sf::Sprite& logoSprite, int newWidth, int newHeight, SoundManager& soundManager, sf::Text& betLabelText, sf::Text& betValueText, sf::Text& creditsLabelText, sf::Text& creditsValueText, std::vector<sf::Text>& prizeTexts, sf::Text& prizeValueOnlyText, sf::Text& instructions);
-
 void updatePrizeTexts(std::vector<sf::Text>& prizeTexts, int betAmount, const sf::Font& font, float windowWidth, float windowHeight, int currentPrize, const std::map<std::string, int>& prizeMultipliers, sf::Sound& prizeSound);
-
 void handleButtonInputs(const ButtonInputContext& context, sf::RenderWindow& window, bool& animateLogoFlag);
 
 
 
 
 
+// Function to initialize UI elements
+void initializeUIElements(const sf::Font& font, sf::RenderWindow& window, sf::Text& betLabelText, sf::Text& betValueText, sf::Text& creditsLabelText, sf::Text& creditsValueText, sf::Text& prizeValueOnlyText) {
+    // Initialize the text elements with font, size, and position
+    betLabelText.setFont(font);
+    betLabelText.setCharacterSize(24);
+    betLabelText.setString("Bet:");
+    betLabelText.setPosition(20, window.getSize().y - 60);
 
+    betValueText.setFont(font);
+    betValueText.setCharacterSize(24);
+    betValueText.setString("1");
+    betValueText.setPosition(80, window.getSize().y - 60);
 
+    creditsLabelText.setFont(font);
+    creditsLabelText.setCharacterSize(24);
+    creditsLabelText.setString("Credits:");
+    creditsLabelText.setPosition(window.getSize().x - 200, window.getSize().y - 60);
 
-SoundManager::~SoundManager() {
-    stopBackgroundMusic(); // Ensure music is stopped
-}
+    creditsValueText.setFont(font);
+    creditsValueText.setCharacterSize(24);
+    creditsValueText.setString("10");
+    creditsValueText.setPosition(window.getSize().x - 100, window.getSize().y - 60);
 
-
-
-void SoundManager::initializeAllSounds() {
-    std::vector<std::pair<std::string, sf::Sound&>> soundFiles = {
-        {"D:/Programming/Projects/Assets/sounds/cardDeal.wav", cardDealSound},
-        {"D:/Programming/Projects/Assets/sounds/held.wav", heldSound},
-        {"D:/Programming/Projects/Assets/sounds/unheld.wav", unheldSound},
-        {"D:/Programming/Projects/Assets/sounds/prize.wav", prizeSound},
-        {"D:/Programming/Projects/Assets/sounds/count.wav", countSound},
-        {"D:/Programming/Projects/Assets/sounds/lose.wav", loseSound},
-        {"D:/Programming/Projects/Assets/sounds/win.wav", winSound}
-    };
-
-    std::vector<sf::SoundBuffer> buffers(soundFiles.size());
-    for (size_t i = 0; i < soundFiles.size(); i++) {
-        if (!buffers[i].loadFromFile(soundFiles[i].first)) {
-            std::cerr << "Failed to load sound: " << soundFiles[i].first << std::endl;
-            throw std::runtime_error("Failed to initialize sound.");
-        }
-        soundFiles[i].second.setBuffer(buffers[i]);
-        soundFiles[i].second.setVolume(100.0f); // Set volume for each sound
-        std::cout << "[Debug] Sound initialized: " << soundFiles[i].first << std::endl;
-    }
-
-    // Load background music tracks
-    auto music1 = std::make_unique<sf::Music>();
-    auto music2 = std::make_unique<sf::Music>();
-    auto music3 = std::make_unique<sf::Music>();
-    auto music4 = std::make_unique<sf::Music>();
-    auto music5 = std::make_unique<sf::Music>();
-
-    if (!music1->openFromFile("D:/Programming/Projects/Assets/music/music1.ogg")) {
-        throw std::runtime_error("Failed to load music 1");
-    }
-    if (!music2->openFromFile("D:/Programming/Projects/Assets/music/music2.ogg")) {
-        throw std::runtime_error("Failed to load music 2");
-    }
-    if (!music3->openFromFile("D:/Programming/Projects/Assets/music/music3.ogg")) {
-        throw std::runtime_error("Failed to load music 3");
-    }
-    if (!music4->openFromFile("D:/Programming/Projects/Assets/music/music4.ogg")) {
-        throw std::runtime_error("Failed to load music 4");
-    }
-    if (!music5->openFromFile("D:/Programming/Projects/Assets/music/music5.ogg")) {
-        throw std::runtime_error("Failed to load music 5");
-    }
-
-    musicTracks.push_back(std::move(music1));
-    musicTracks.push_back(std::move(music2));
-    musicTracks.push_back(std::move(music3));
-    musicTracks.push_back(std::move(music4));
-    musicTracks.push_back(std::move(music5));
-
-    for (const auto& music : musicTracks) {
-        music->setVolume(100.0f); // Set volume for each music track
-    }
+    prizeValueOnlyText.setFont(font);
+    prizeValueOnlyText.setCharacterSize(24);
+    prizeValueOnlyText.setString("");
+    prizeValueOnlyText.setPosition(window.getSize().x / 2 - 50, window.getSize().y / 2);
 }
 
 
 
 
-
-void SoundManager::playRandomBackgroundMusic() {
-    if (!musicTracks.empty()) {
-        // Select a random music track
-        std::random_device rd;
-        std::mt19937 gen(rd());
-        std::uniform_int_distribution<> distr(0, musicTracks.size() - 1);
-
-        currentMusic = musicTracks[distr(gen)].get();
-        currentMusic->setLoop(true);
-        currentMusic->play();
-        std::cout << "[Debug] Playing random background music" << std::endl;
-    }
-}
-
-
-
-
-
-
-
-void SoundManager::stopBackgroundMusic() {
-    if (currentMusic != nullptr) {
-        currentMusic->stop();
-        currentMusic = nullptr;
-    }
-}
-
-
-
-void SoundManager::playSound(const std::string& soundName) {
-    std::cout << "[Debug] Playing sound: " << soundName << std::endl;
-    if (soundName == "cardDeal") cardDealSound.play();
-    else if (soundName == "held") heldSound.play();
-    else if (soundName == "unheld") unheldSound.play();
-    else if (soundName == "prize") prizeSound.play();
-    else if (soundName == "count") countSound.play();
-    else if (soundName == "lose") loseSound.play();
-    else if (soundName == "win") winSound.play();
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-void animateLogo(sf::Sprite& logoSprite, float speed, float deltaTime, bool animateLogoFlag, const sf::Vector2u& windowSize) {
-    static sf::Vector2f direction(1.0f, 1.0f); // Define direction as static to retain its value
+// Function to animate the logo
+void animateLogo(sf::Sprite& logoSprite, float speed, float deltaTime, bool& animateLogoFlag, const sf::Vector2u& windowSize) {
+    static float direction = 1.0f;
 
     if (animateLogoFlag) {
-        float moveDistance = speed * deltaTime;
-        logoSprite.move(direction * moveDistance);
+        sf::Vector2f position = logoSprite.getPosition();
+        position.x += speed * direction * deltaTime;
 
-        // Bounce off the window edges
-        if (logoSprite.getPosition().x <= 0 || logoSprite.getPosition().x + logoSprite.getGlobalBounds().width >= windowSize.x) {
-            direction.x = -direction.x;
+        if (position.x + logoSprite.getGlobalBounds().width > windowSize.x || position.x < 0) {
+            direction *= -1;
         }
-        if (logoSprite.getPosition().y <= 0 || logoSprite.getPosition().y + logoSprite.getGlobalBounds().height >= windowSize.y) {
-            direction.y = -direction.y;
-        }
+
+        logoSprite.setPosition(position);
     }
 }
 
 
+void handleButtonInputs(const ButtonInputContext& context, sf::RenderWindow& window, bool& animateLogoFlag) {
+    const sf::Event& event = context.event;
+    static bool previousBKeyState = false;
 
+    if (event.type == sf::Event::KeyPressed) {
+        if (event.key.code == sf::Keyboard::S) {
+            if (!context.gameStarted) {
+                context.soundManager.stopBackgroundMusic(); // Stop the music when the game starts
+                startGame(context.window, context.font, context.prizeTexts, context.betAmount, context.prize, context.prizeMultipliers, context.soundManager.getPrizeSound(), context.canBet);
+                context.gameStarted = true;
+                std::cout << "[Debug] Starting game and stopping background music" << std::endl;
+            } else {
+                resetGameState(context.playerCredits, context.betAmount, context.canCollect, context.drawFiveCards, context.hand, context.deck, context.prizeTexts, context.font, context.window, context.backgroundSprite, context.instructions, context.creditsLabelText, context.creditsValueText, context.betLabelText, context.betValueText, context.prizeValueOnlyText, context.soundManager);
+                updateUI(window, context.backgroundSprite, context.instructions, context.creditsLabelText, context.creditsValueText, context.betLabelText, context.betValueText, context.prizeTexts, context.hand, context.gameOverText, context.gameOver, context.playerCredits, context.betAmount);
 
+                std::cout << "[Debug] Game reset" << std::endl; // Removed playing win sound
+            }
 
-void initializeUIElements(const sf::Font& font, sf::RenderWindow& window, sf::Text& betLabelText, sf::Text& betValueText, sf::Text& creditsLabelText, sf::Text& creditsValueText, sf::Text& prizeValueOnlyText) {
-    // Common settings
-    const int characterSize = 24;
-    const sf::Color labelColor = sf::Color::Blue;
-    const sf::Color valueColor = sf::Color::Green;
+            animateLogoFlag = false; // Stop the logo animation
+            std::cout << "[Debug] Game State Reset Completed and Prize Texts Updated!" << std::endl;
+        }
 
-    // Initialize a single function to reduce redundancy
-    auto initializeText = [&](sf::Text& text, const std::string& str, const sf::Font& font, int size, const sf::Color& color) {
-        text.setFont(font);
-        text.setCharacterSize(size);
-        text.setFillColor(color);
-        text.setString(str);
-    };
-
-    // Bet label and value setup
-    initializeText(betLabelText, "Bet:", font, characterSize, labelColor);
-    initializeText(betValueText, "1", font, characterSize, valueColor); // Set initial bet value
-
-    // Credits label and value setup
-    initializeText(creditsLabelText, "Credits:", font, characterSize, labelColor);
-    initializeText(creditsValueText, "10", font, characterSize, valueColor); // Set initial credits value
-
-    // Initialize prize value text
-    prizeValueOnlyText.setFont(font);
-    prizeValueOnlyText.setCharacterSize(60); // Fixed character size
-    prizeValueOnlyText.setFillColor(sf::Color(144, 238, 144));
-    prizeValueOnlyText.setPosition(window.getSize().x * 0.70f, window.getSize().y * 0.50f + 40);
-    prizeValueOnlyText.setString("0-INIT"); // Unique identifier
-
-    // Positioning UI elements
-    float windowWidth = static_cast<float>(window.getSize().x);
-    float windowHeight = static_cast<float>(window.getSize().y);
-
-    betLabelText.setPosition(windowWidth * 0.05f, windowHeight * 0.1f);
-    betValueText.setPosition(windowWidth * 0.2f, windowHeight * 0.1f);
-
-    creditsLabelText.setPosition(windowWidth * 0.05f, windowHeight * 0.2f);
-    creditsValueText.setPosition(windowWidth * 0.2f, windowHeight * 0.2f);
+        if (context.gameStarted && context.canBet && event.key.code == sf::Keyboard::B && context.playerCredits > 0) {
+            handleBetPlacement(event, context.canBet, context.betAmount, context.playerCredits, context.prizeTexts, context.font, context.betText, window, context.soundManager);
+            context.soundManager.getCardDealSound().play(); // Play card deal sound when bet is placed
+            context.betValueText.setString(std::to_string(context.betAmount));
+            previousBKeyState = true;
+            std::cout << "[Debug] Bet Placed: " << context.betAmount << ", playing card deal sound" << std::endl;
+        }
+    } else if (event.type == sf::Event::KeyReleased && event.key.code == sf::Keyboard::B) {
+        previousBKeyState = false;
+        std::cout << "[Debug] B Key Released" << std::endl;
+    }
 }
-
-
 
 
 
 int main() {
+    // Ensure working directory is set to project root
+    fs::current_path("D:/Programming/Projects/Softypoker");
+
     sf::RenderWindow window(sf::VideoMode(1280, 720), "SoftyPoker");
     sf::View view(sf::FloatRect(0, 0, 1280, 720));
     window.setView(view);
 
+    // Output the current working directory
+    std::cout << "Current working directory: " << fs::current_path() << std::endl;
+
     // Load fonts, sounds, etc.
     sf::Font font;
-    if (!font.loadFromFile("D:/Programming/Projects/Assets/fonts/arialnbi.ttf")) {
+    if (!font.loadFromFile("assets/fonts/arialnbi.ttf")) {
         std::cerr << "Failed to load font" << std::endl;
         return -1;
     }
@@ -345,12 +205,12 @@ int main() {
 
     std::vector<sf::Texture> backgroundTextures;
     std::vector<std::string> backgroundPaths = {
-        "D:/Programming/Projects/Assets/images/fantasy_girl.png",
-        "D:/Programming/Projects/Assets/images/fire_girl.png",
-        "D:/Programming/Projects/Assets/images/sofa_girl.png",
-        "D:/Programming/Projects/Assets/images/claws_girl.png",
-        "D:/Programming/Projects/Assets/images/blond_girl.png",
-        "D:/Programming/Projects/Assets/images/skul_girl.png"
+        "assets/images/fantasy_girl.png",
+        "assets/images/fire_girl.png",
+        "assets/images/sofa_girl.png",
+        "assets/images/claws_girl.png",
+        "assets/images/blond_girl.png",
+        "assets/images/skul_girl.png"
     };
 
     for (const auto& path : backgroundPaths) {
@@ -375,7 +235,7 @@ int main() {
     );
     backgroundSprite.setPosition(0, 0);
 
-    if (!logoTexture.loadFromFile("D:/Programming/Projects/Assets/images/logo.png")) {
+    if (!logoTexture.loadFromFile("assets/images/logo.png")) {
         std::cerr << "Failed to load logo texture" << std::endl;
         return -1;
     }
@@ -393,8 +253,8 @@ int main() {
     instructions.setPosition((window.getSize().x - instructions.getLocalBounds().width) / 2.f, 10.f);
 
     // Ensure prize texts are initialized
-    updatePrizeTexts(prizeTexts, betAmount, font, window.getSize().x, window.getSize().y, prize, prizeMultipliers, soundManager.prizeSound);
-
+    // Example call to updatePrizeTexts
+    updatePrizeTexts(prizeTexts, betAmount, font, window.getSize().x, window.getSize().y, prize, prizeMultipliers, soundManager.getPrizeSound());
     // Trigger initial resizing to ensure UI elements are positioned correctly at the start
     handleResize(window, view, backgroundSprite, logoSprite, window.getSize().x, window.getSize().y, soundManager, betLabelText, betValueText, creditsLabelText, creditsValueText, prizeTexts, prizeValueOnlyText, instructions);
 
@@ -414,8 +274,8 @@ int main() {
                 ButtonInputContext context{
                     event, hand, canBet, betAmount, canCollect, prize, playerCredits, drawFiveCards,
                     roundInProgress, gameOver, deck, window, backgroundSprite, creditsText, betText,
-                    gameStarted, prizeTexts, font, soundManager.cardDealSound, soundManager.heldSound,
-                    soundManager.unheldSound, soundManager.prizeSound, soundManager.countSound, instructions,
+                    gameStarted, prizeTexts, font, soundManager.getCardDealSound(), soundManager.getHeldSound(),
+                    soundManager.getUnheldSound(), soundManager.getCountSound(), instructions,
                     gameOverText, gamblingPhase, soundManager, creditsLabelText, creditsValueText, betLabelText,
                     betValueText, prizeMultipliers
                 };
@@ -456,6 +316,99 @@ int main() {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void startGame(sf::RenderWindow& window, const sf::Font& font, std::vector<sf::Text>& prizeTexts, int betAmount, int prize, const std::map<std::string, int>& prizeMultipliers, sf::Sound& prizeSound, bool& canBet);
+    float windowWidth = static_cast<float>(window.getSize().x);
+    float windowHeight = static_cast<float>(window.getSize().y);
+
+    updatePrizeTexts(prizeTexts, betAmount, font, windowWidth, windowHeight, prize, prizeMultipliers, prizeSound);
+    canBet = false;
+}
+
+
+
+
+void resetGameState(int& playerCredits, int& betAmount, bool& canCollect, bool& drawFiveCards, std::vector<Card>& hand, std::vector<Card>& deck, std::vector<sf::Text>& prizeTexts, const sf::Font& font, sf::RenderWindow& window, sf::Sprite& backgroundSprite, sf::Text& instructions, sf::Text& creditsLabelText, sf::Text& creditsValueText, sf::Text& betLabelText, sf::Text& betValueText, sf::Text& prizeValueOnlyText, SoundManager& soundManager);
+    playerCredits = 10;
+    betAmount = 1;
+    canCollect = false;
+    drawFiveCards = true;
+    hand.clear();
+    deck = createDeck();
+    shuffleDeck(deck);
+    prize = 0;
+    gameStarted = true;
+    roundInProgress = false;
+    gameOver = false;
+    gamblingPhase = false;
+    canBet = true;
+
+    updatePrizeTexts(prizeTexts, betAmount, font, window.getSize().x, window.getSize().y, prize, prizeMultipliers, soundManager.getPrizeSound());
+
+    creditsLabelText.setString("Credits: " + std::to_string(playerCredits));
+    betLabelText.setString("Bet: " + std::to_string(betAmount));
+}
+
+
+
+
+
+
+
+void dealInitialHand(std::vector<Card>& deck, std::vector<Card>& hand, sf::RenderWindow& window, sf::Sprite& backgroundSprite, sf::Text& creditsLabelText, sf::Text& betText, const std::vector<sf::Text>& prizeTexts, SoundManager& soundManager) {
+    hand.clear();
+    float windowHeight = window.getSize().y;
+
+    // Deactivate the B key
+    canBet = false;
+
+    for (int i = 0; i < 5; ++i) {
+        hand.push_back(deck.back());
+        deck.pop_back();
+        hand.back().isHeld = false;  // Reset the isHeld state
+
+        float scaleFactor = (windowHeight / 600.0f) * CARD_SCALE_FACTOR;
+        hand.back().sprite.setScale(scaleFactor, scaleFactor);
+
+        float xPos = CARD_LEFT_OFFSET + i * (hand.back().sprite.getGlobalBounds().width + CARD_SPACING);
+        float yPos = windowHeight - CARD_BOTTOM_OFFSET - hand.back().sprite.getGlobalBounds().height;
+        hand.back().sprite.setPosition(xPos, yPos);
+
+        soundManager.getCardDealSound().play();
+
+        window.clear();
+        window.draw(backgroundSprite);
+        window.draw(creditsLabelText);
+        window.draw(betText);
+        for (const auto& prizeText : prizeTexts) {
+            window.draw(prizeText);
+        }
+        for (int j = 0; j <= i; ++j) {
+            window.draw(hand[j].sprite);
+        }
+        window.display();
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    }
+}
+
+
+
+
+
 void handleResize(sf::RenderWindow& window, sf::View& view, sf::Sprite& backgroundSprite, sf::Sprite& logoSprite, int newWidth, int newHeight, SoundManager& soundManager, sf::Text& betLabelText, sf::Text& betValueText, sf::Text& creditsLabelText, sf::Text& creditsValueText, std::vector<sf::Text>& prizeTexts, sf::Text& prizeValueOnlyText, sf::Text& instructions) {
     view.setSize(newWidth, newHeight);
     view.setCenter(newWidth / 2, newHeight / 2);
@@ -488,20 +441,6 @@ void handleResize(sf::RenderWindow& window, sf::View& view, sf::Sprite& backgrou
 
 
 
-
-
-
-
-
-
-
-
-
-void updatePrizeValue(sf::Text& prizeValueOnlyText, int currentPrize) {
-    prizeValueOnlyText.setString(std::to_string(currentPrize) + "-INIT"); // Update string while retaining identifier
-}
-
-
 void updatePrizeTexts(std::vector<sf::Text>& prizeTexts, int betAmount, const sf::Font& font, float windowWidth, float windowHeight, int currentPrize, const std::map<std::string, int>& prizeMultipliers, sf::Sound& prizeSound) {
     prizeTexts.clear();
     std::vector<std::string> prizeNames = {
@@ -530,58 +469,39 @@ void updatePrizeTexts(std::vector<sf::Text>& prizeTexts, int betAmount, const sf
 
         prizeTexts.push_back(prizeText);
     }
-
-
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-void handleButtonInputs(const ButtonInputContext& context, sf::RenderWindow& window, bool& animateLogoFlag) {
-    const sf::Event& event = context.event;
-    static bool previousBKeyState = false;
-
-    if (event.type == sf::Event::KeyPressed) {
-        if (event.key.code == sf::Keyboard::S) {
-            if (!context.gameStarted) {
-                context.soundManager.stopBackgroundMusic(); // Stop the music when the game starts
-                startGame(context.window, context.font, context.prizeTexts, context.betAmount, context.prize, context.prizeMultipliers, context.soundManager.prizeSound, context.canBet);
-                context.gameStarted = true;
-                std::cout << "[Debug] Starting game and stopping background music" << std::endl;
-            } else {
-                resetGameState(context.playerCredits, context.betAmount, context.canCollect, context.drawFiveCards, context.hand, context.deck, context.prizeTexts, context.font, context.window, context.prize, context.betText, context.creditsText, context.gameStarted, context.roundInProgress, context.gameOver, context.gamblingPhase, context.soundManager);
-                updateUI(window, context.backgroundSprite, context.instructions, context.creditsLabelText, context.creditsValueText, context.betLabelText, context.betValueText, context.prizeTexts, context.hand, context.gameOverText, context.gameOver, context.playerCredits, context.betAmount);
-
-                std::cout << "[Debug] Game reset" << std::endl; // Removed playing win sound
-            }
-
-            animateLogoFlag = false; // Stop the logo animation
-            std::cout << "[Debug] Game State Reset Completed and Prize Texts Updated!" << std::endl;
-        }
-
-        if (context.gameStarted && context.canBet && event.key.code == sf::Keyboard::B && context.playerCredits > 0) {
-            handleBetPlacement(event, context.canBet, context.betAmount, context.playerCredits, context.prizeTexts, context.font, context.betText, window, context.soundManager);
-
-            context.soundManager.playSound("cardDeal"); // Play card deal sound when bet is placed
-            context.betValueText.setString(std::to_string(context.betAmount));
-            previousBKeyState = true;
-            std::cout << "[Debug] Bet Placed: " << context.betAmount << ", playing card deal sound" << std::endl;
-        }
-    } else if (event.type == sf::Event::KeyReleased && event.key.code == sf::Keyboard::B) {
-        previousBKeyState = false;
-        std::cout << "[Debug] B Key Released" << std::endl;
+void handleBetPlacement(const sf::Event& event, bool& canBet, int& betAmount, int& playerCredits, std::vector<sf::Text>& prizeTexts, const sf::Font& font, sf::Text& betText, sf::RenderWindow& window, SoundManager& soundManager) {
+    if (event.key.code == sf::Keyboard::B && canBet && playerCredits > 0) {
+        betAmount = (betAmount % 5) + 1;
+        updatePrizeTexts(prizeTexts, betAmount, font, window.getSize().x, window.getSize().y, prize, prizeMultipliers, soundManager.getPrizeSound());
+        betText.setString("Bet: " + std::to_string(betAmount));
     }
 }
+
+
+
+
+
+
+
+void updatePrizeValue(sf::Text& prizeValueOnlyText, int currentPrize) {
+    prizeValueOnlyText.setString(std::to_string(currentPrize) + "-INIT"); // Update string while retaining identifier
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -648,44 +568,9 @@ void updateUI(sf::RenderWindow& window, sf::Sprite& backgroundSprite, sf::Text& 
 
 
 
-void resetGameState(int& playerCredits, int& betAmount, bool& canCollect, bool& drawFiveCards, std::vector<Card>& hand, std::vector<Card>& deck, std::vector<sf::Text>& prizeTexts, const sf::Font& font, sf::RenderWindow& window, int& prize, sf::Text& betText, sf::Text& creditsText, bool& gameStarted, bool& roundInProgress, bool& gameOver, bool& gamblingPhase, SoundManager& soundManager) {
-    std::cout << "[Debug] resetGameState called" << std::endl;
-
-    playerCredits = 10;
-    betAmount = 1;
-    canCollect = false;
-    drawFiveCards = true;
-    hand.clear();
-    deck = createDeck();
-    shuffleDeck(deck);
-    prize = 0;
-    gameStarted = true;
-    roundInProgress = false;
-    gameOver = false;
-    gamblingPhase = false;
-    canBet = true;
-
-    updatePrizeTexts(prizeTexts, betAmount, font, window.getSize().x, window.getSize().y, prize, prizeMultipliers, soundManager.prizeSound);
-
-    creditsText.setString("Credits: " + std::to_string(playerCredits));
-    std::cout << "[Debug] creditsText updated to " << creditsText.getString().toAnsiString() << std::endl;
-    betText.setString("Bet: " + std::to_string(betAmount));
-
-    std::cout << "[Debug] resetGameState completed" << std::endl;
-}
 
 
 
-
-
-
-void startGame(sf::RenderWindow& window, const sf::Font& font, std::vector<sf::Text>& prizeTexts, int betAmount, int prize, const std::map<std::string, int>& prizeMultipliers, sf::Sound& prizeSound, bool& canBet) {
-    float windowWidth = static_cast<float>(window.getSize().x);
-    float windowHeight = static_cast<float>(window.getSize().y);
-
-    updatePrizeTexts(prizeTexts, betAmount, font, windowWidth, windowHeight, prize, prizeMultipliers, prizeSound);
-    canBet = false;
-}
 
 
 
@@ -705,15 +590,6 @@ float calculateScaleFactor(const sf::RenderWindow& window) {
 
 
 
-
-void handleBetPlacement(const sf::Event& event, bool& canBet, int& betAmount, int& playerCredits, std::vector<sf::Text>& prizeTexts, const sf::Font& font, sf::Text& betText, sf::RenderWindow& window, SoundManager& soundManager) {
-    if (event.key.code == sf::Keyboard::B && canBet && playerCredits > 0) {
-        betAmount = (betAmount % 5) + 1;  // Handle B key cycling
-        updatePrizeTexts(prizeTexts, betAmount, font, window.getSize().x, window.getSize().y, prize, prizeMultipliers, soundManager.prizeSound); // Ensure prizeMultipliers are used
-        betText.setString("Bet: " + std::to_string(betAmount));
-        std::cout << "[Debug] New Bet: " << betAmount << std::endl;
-    }
-}
 
 
 
@@ -770,42 +646,12 @@ void shuffleDeck(std::vector<Card>& deck) {
 
 
 
-void dealInitialHand(std::vector<Card>& deck, std::vector<Card>& hand, sf::RenderWindow& window, sf::Sprite& backgroundSprite, sf::Text& creditsLabelText, sf::Text& betText, const std::vector<sf::Text>& prizeTexts, sf::Sound& cardDealSound) {
-    hand.clear();
-    float windowHeight = window.getSize().y;
 
-    // Deactivate the B key
-    canBet = false;
 
-    for (int i = 0; i < 5; ++i) {
-        hand.push_back(deck.back());
-        deck.pop_back();
-        hand.back().isHeld = false;  // Reset the isHeld state
 
-        float scaleFactor = (windowHeight / 600.0f) * CARD_SCALE_FACTOR;
-        hand.back().sprite.setScale(scaleFactor, scaleFactor);
 
-        float xPos = CARD_LEFT_OFFSET + i * (hand.back().sprite.getGlobalBounds().width + CARD_SPACING);
-        float yPos = windowHeight - CARD_BOTTOM_OFFSET - hand.back().sprite.getGlobalBounds().height;
-        hand.back().sprite.setPosition(xPos, yPos);
 
-        cardDealSound.play();
 
-        window.clear();
-        window.draw(backgroundSprite);
-        window.draw(creditsLabelText);
-        window.draw(betText);
-        for (const auto& prizeText : prizeTexts) {
-            window.draw(prizeText);
-        }
-        for (int j = 0; j <= i; ++j) {
-            window.draw(hand[j].sprite);
-        }
-        window.display();
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    }
-}
 
 
 

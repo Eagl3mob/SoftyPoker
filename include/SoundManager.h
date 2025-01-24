@@ -13,6 +13,15 @@ public:
     void stopBackgroundMusic();
     void playSound(const std::string& soundName);
 
+    // Getter methods to access private sounds
+    sf::Sound& getCardDealSound() { return cardDealSound; }
+    sf::Sound& getHeldSound() { return heldSound; }
+    sf::Sound& getUnheldSound() { return unheldSound; }
+    sf::Sound& getPrizeSound() { return prizeSound; }
+    sf::Sound& getCountSound() { return countSound; }
+    sf::Sound& getLoseSound() { return loseSound; }
+    sf::Sound& getWinSound() { return winSound; }
+
 private:
     sf::Sound cardDealSound;
     sf::Sound heldSound;
@@ -26,3 +35,4 @@ private:
 };
 
 #endif // SOUNDMANAGER_H
+

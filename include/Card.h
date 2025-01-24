@@ -2,8 +2,7 @@
 #define CARD_H
 
 #include <SFML/Graphics.hpp>
-#include <string>
-#include <memory>
+
 struct Card {
     sf::Sprite sprite;
     sf::Texture* texture;

@@ -1,4 +1,3 @@
-
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
 #include "Card.h"
@@ -28,9 +27,6 @@ int betAmount = 1;
 bool canBet = true;
 bool gameOver = false;
 
-
-
-
 // Function Prototypes
 void initializeUIElements();
 void initializeSounds(sf::Sound& cardDealSound, sf::Sound& heldSound, sf::Sound& unheldSound);
@@ -38,9 +34,7 @@ std::vector<Card> createDeck();
 void shuffleDeck(std::vector<Card>& deck);
 bool loadTexture(Card& card, const std::string& filePath);
 void initializeGame(sf::RenderWindow& window, sf::Sprite& backgroundSprite, std::vector<Card>& deck, bool& canBet);
-void handleButtonInputs(const sf::Event& event, std::vector<Card>& hand, bool& canBet, int& betAmount, bool& canCollect, int& prize, int& playerCredits, bool& drawFiveCards, bool& roundInProgress, bool& gameOver, std::vector<Card>& deck, sf::RenderWindow& window, sf::Sprite& backgroundSprite, sf::Sound& cardDealSound, sf::Sound& heldSound, sf::Sound& unheldSound, bool& gamblingPhase);
-
-
+void handleButtonInputs(const sf::Event& event, std::vector<Card>& hand, bool& canBet, int& betAmount, bool& canCollect, int& prize, int& playerCredits, bool& drawFiveCards, bool& roundInProgress, bool& gameOver, std::vector<Card>& deck, sf::RenderWindow& window, sf::Sprite& backgroundSprite, sf::Text& creditsText, sf::Text& betText, bool& gameStarted);
 
 void initializeUIElements(const sf::Font& font) {
     instructions.setFont(font);
@@ -74,24 +68,24 @@ void initializeUIElements(const sf::Font& font) {
 
 void initializeSounds(sf::Sound& cardDealSound, sf::Sound& heldSound, sf::Sound& unheldSound) {
     static sf::SoundBuffer cardDealBuffer;
-    if (!cardDealBuffer.loadFromFile("D:/Programming/Projects/Assets/sound/deal.wav")) {
-        std::cerr << "Failed to open sound file 'D:/Programming/Projects/Assets/sound/deal.wav'\n";
+    if (!cardDealBuffer.loadFromFile("Assets/sound/deal.wav")) {
+        std::cerr << "Failed to open sound file 'Assets/sound/deal.wav'\n";
         throw std::runtime_error("Failed to load deal.wav");
     }
     cardDealSound.setBuffer(cardDealBuffer);
     cardDealSound.setVolume(100);
 
     static sf::SoundBuffer heldBuffer;
-    if (!heldBuffer.loadFromFile("D:/Programming/Projects/Assets/sound/hold.wav")) {
-        std::cerr << "Failed to open sound file 'D:/Programming/Projects/Assets/sound/hold.wav'\n";
+    if (!heldBuffer.loadFromFile("Assets/sound/hold.wav")) {
+        std::cerr << "Failed to open sound file 'Assets/sound/hold.wav'\n";
         throw std::runtime_error("Failed to load hold.wav");
     }
     heldSound.setBuffer(heldBuffer);
     heldSound.setVolume(100);
 
     static sf::SoundBuffer unheldBuffer;
-    if (!unheldBuffer.loadFromFile("D:/Programming/Projects/Assets/sound/unheld.wav")) {
-        std::cerr << "Failed to open sound file 'D:/Programming/Projects/Assets/sound/unheld.wav'\n";
+    if (!unheldBuffer.loadFromFile("Assets/sound/unheld.wav")) {
+        std::cerr << "Failed to open sound file 'Assets/sound/unheld.wav'\n";
         throw std::runtime_error("Failed to load unheld.wav");
     }
     unheldSound.setBuffer(unheldBuffer);
@@ -118,7 +112,7 @@ void shuffleDeck(std::vector<Card>& deck) {
 void initializeGame(sf::RenderWindow& window, sf::Sprite& backgroundSprite, std::vector<Card>& deck, const sf::Font& font, bool& canBet) {
     static sf::Texture backgroundTexture;
     try {
-        if (!backgroundTexture.loadFromFile("D:/Programming/Projects/Assets/backgrounds/space_cloud.png")) {
+        if (!backgroundTexture.loadFromFile("Assets/backgrounds/space_cloud.png")) {
             throw std::runtime_error("Failed to load background texture");
         }
     } catch (const std::exception& e) {
@@ -133,9 +127,7 @@ void initializeGame(sf::RenderWindow& window, sf::Sprite& backgroundSprite, std:
     canBet = true;
 }
 
-
-
-void handleButtonInputs(const sf::Event& event, std::vector<Card>& hand, bool& canBet, int& betAmount, bool& canCollect, int& prize, int& playerCredits, bool& drawFiveCards, bool& roundInProgress, bool& gameOver, std::vector<Card>& deck, sf::RenderWindow& window, sf::Sprite& backgroundSprite, sf::Sound& cardDealSound, sf::Sound& heldSound, sf::Sound& unheldSound, bool& gamblingPhase) {
+void handleButtonInputs(const sf::Event& event, std::vector<Card>& hand, bool& canBet, int& betAmount, bool& canCollect, int& prize, int& playerCredits, bool& drawFiveCards, bool& roundInProgress, bool& gameOver, std::vector<Card>& deck, sf::RenderWindow& window, sf::Sprite& backgroundSprite, sf::Text& creditsText, sf::Text& betText, bool& gameStarted) {
     if (event.type == sf::Event::KeyPressed) {
         if (event.key.code == sf::Keyboard::S && !gameStarted) {
             gameStarted = true;
@@ -182,13 +174,6 @@ void handleButtonInputs(const sf::Event& event, std::vector<Card>& hand, bool& c
     }
 }
 
-
-
-
-
-
-
-
 int main() {
     // Initialize the window
     sf::RenderWindow window;
@@ -197,7 +182,7 @@ int main() {
     sf::Sprite backgroundSprite;
 
     // Load font
-    const std::string fontPath = "D:/Projects/softypoker/Assets/fonts/arialnbi.ttf";
+    const std::string fontPath = "Assets/fonts/arialnbi.ttf";
     std::ifstream fontFile(fontPath, std::ios::binary | std::ios::ate);
     if (!fontFile.is_open()) {
         std::cerr << "Failed to open font file" << std::endl;
@@ -253,7 +238,7 @@ int main() {
             if (event.type == sf::Event::Closed) {
                 window.close();
             }
-            handleButtonInputs(event, hand, canBet, betAmount, canCollect, prize, playerCredits, drawFiveCards, roundInProgress, gameOver, deck, window, backgroundSprite, creditsText, betText, gameStarted, prizeTexts, font, cardDealSound, heldSound, unheldSound, gamblingPhase);
+            handleButtonInputs(event, hand, canBet, betAmount, canCollect, prize, playerCredits, drawFiveCards, roundInProgress, gameOver, deck, window, backgroundSprite, creditsText, betText, gameStarted);
         }
 
         // Clear the window
@@ -289,8 +274,6 @@ int main() {
 
     return 0;
 }
-
-
 
 
 

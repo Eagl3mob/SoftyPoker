@@ -1,15 +1,12 @@
 
-#include <SFML/Audio.hpp>
+
 #include <SFML/Graphics.hpp>
-#include "Card.h"
-#include <vector>
-#include <map>
-#include <set>
-#include <random>
+#include <SFML/Window.hpp>
+#include <SFML/Audio.hpp>
 #include <iostream>
-#include <chrono>
-#include <thread>
-#include <unordered_set>
+#include <vector>
+#include "Deck.h"
+#include "Card.h"
 
 // Constants
 const float CARD_SCALE_FACTOR = 0.13f;
@@ -20,14 +17,15 @@ const std::string ASSET_DIR = "Assets/";
 
 // Global Variables
 sf::Font font;
-sf::Text instructions;
-sf::Text creditsText;
-sf::Text betText;
-sf::Text gameOverText;
+std::unique_ptr<sf::Text> instructions;
+std::unique_ptr<sf::Text> creditsText;
+std::unique_ptr<sf::Text> betText;
+std::unique_ptr<sf::Text> gameOverText;
 std::vector<sf::Text> prizeTexts;
 int betAmount = 1;
 bool canBet = true;
 bool gameOver = false;
+bool gameStarted = false; // Add this global variable
 
 // Function Prototypes
 void initializeUIElements();
@@ -37,93 +35,66 @@ void shuffleDeck(std::vector<Card>& deck);
 bool loadTexture(Card& card, const std::string& filePath);
 void initializeGame(sf::RenderWindow& window, sf::Sprite& backgroundSprite, std::vector<Card>& deck, bool& canBet);
 void handleButtonInputs(const sf::Event& event, std::vector<Card>& hand, bool& canBet, int& betAmount, bool& canCollect, int& prize, int& playerCredits, bool& drawFiveCards, bool& roundInProgress, bool& gameOver, std::vector<Card>& deck, sf::RenderWindow& window, sf::Sprite& backgroundSprite, sf::Sound& cardDealSound, sf::Sound& heldSound, sf::Sound& unheldSound, bool& gamblingPhase);
+void updatePrizeTexts(std::vector<sf::Text>& prizeTexts, int betAmount, int windowWidth, int windowHeight, int prize);
+void updateCardPositionsAndScales(std::vector<Card>& hand, sf::RenderWindow& window);
+int evaluateHand(const std::vector<Card>& hand, int betAmount);
 
-void initializeUIElements(const sf::Font& font) {
-    instructions.setFont(font);
-    instructions.setString("*S Start**B Bet**D Deal**1-5 Hold**G Gamble Low< >High**C Collect*");
-    instructions.setCharacterSize(24);
-    instructions.setFillColor(sf::Color::Blue);
-    instructions.setStyle(sf::Text::Italic);
-    instructions.setPosition(sf::Vector2f(0, 2));
+void initializeUIElements() {
+    instructions = std::make_unique<sf::Text>("*S Start**B Bet**D Deal**1-5 Hold**G Gamble Low< >High**C Collect*", font, 24);
+    instructions->setFillColor(sf::Color::Blue);
+    instructions->setStyle(sf::Text::Italic);
+    instructions->setPosition(sf::Vector2f(0, 2));
 
-    creditsText.setFont(font);
-    creditsText.setString("Credits: 0");
-    creditsText.setCharacterSize(24);
-    creditsText.setFillColor(sf::Color::White);
-    creditsText.setStyle(sf::Text::Italic);
-    creditsText.setPosition(sf::Vector2f(50, 250));
+    creditsText = std::make_unique<sf::Text>("Credits: 0", font, 24);
+    creditsText->setFillColor(sf::Color::White);
+    creditsText->setStyle(sf::Text::Italic);
+    creditsText->setPosition(sf::Vector2f(50, 250));
 
-    betText.setFont(font);
-    betText.setString("Bet: 0");
-    betText.setCharacterSize(24);
-    betText.setFillColor(sf::Color::White);
-    betText.setStyle(sf::Text::Italic);
-    betText.setPosition(sf::Vector2f(50, 280));
+    betText = std::make_unique<sf::Text>("Bet: 0", font, 24);
+    betText->setFillColor(sf::Color::White);
+    betText->setStyle(sf::Text::Italic);
+    betText->setPosition(sf::Vector2f(50, 280));
 
-    gameOverText.setFont(font);
-    gameOverText.setString("GAME OVER");
-    gameOverText.setCharacterSize(30);
-    gameOverText.setFillColor(sf::Color::Red);
-    gameOverText.setStyle(sf::Text::Bold);
-    gameOverText.setPosition(sf::Vector2f(50, 200));
+    gameOverText = std::make_unique<sf::Text>("GAME OVER", font, 30);
+    gameOverText->setFillColor(sf::Color::Red);
+    gameOverText->setStyle(sf::Text::Bold);
+    gameOverText->setPosition(sf::Vector2f(50, 200));
 }
 
 void initializeSounds(sf::Sound& cardDealSound, sf::Sound& heldSound, sf::Sound& unheldSound) {
     static sf::SoundBuffer cardDealBuffer;
-    if (!cardDealBuffer.loadFromFile(ASSET_DIR + "sound/deal.wav")) {
-        std::cerr << "Failed to open sound file '" + ASSET_DIR + "sound/deal.wav'\n";
+    if (!cardDealBuffer.loadFromFile(ASSET_DIR + "sounds/deal.wav")) {
+        std::cerr << "Failed to open sound file '" + ASSET_DIR + "sounds/deal.wav'\n";
         throw std::runtime_error("Failed to load deal.wav");
     }
     cardDealSound.setBuffer(cardDealBuffer);
     cardDealSound.setVolume(100);
 
     static sf::SoundBuffer heldBuffer;
-    if (!heldBuffer.loadFromFile(ASSET_DIR + "sound/hold.wav")) {
-        std::cerr << "Failed to open sound file '" + ASSET_DIR + "sound/hold.wav'\n";
+    if (!heldBuffer.loadFromFile(ASSET_DIR + "sounds/hold.wav")) {
+        std::cerr << "Failed to open sound file '" + ASSET_DIR + "sounds/hold.wav'\n";
         throw std::runtime_error("Failed to load hold.wav");
     }
     heldSound.setBuffer(heldBuffer);
     heldSound.setVolume(100);
 
     static sf::SoundBuffer unheldBuffer;
-    if (!unheldBuffer.loadFromFile(ASSET_DIR + "sound/unheld.wav")) {
-        std::cerr << "Failed to open sound file '" + ASSET_DIR + "sound/unheld.wav'\n";
+    if (!unheldBuffer.loadFromFile(ASSET_DIR + "sounds/unheld.wav")) {
+        std::cerr << "Failed to open sound file '" + ASSET_DIR + "sounds/unheld.wav'\n";
         throw std::runtime_error("Failed to load unheld.wav");
     }
     unheldSound.setBuffer(unheldBuffer);
     unheldSound.setVolume(100);
 }
 
-bool loadTexture(Card& card, const std::string& filePath) {
-    card.texture = new sf::Texture();
-    if (!card.texture->loadFromFile(filePath)) {
-        delete card.texture;
-        card.texture = nullptr;
-        return false;
-    }
-    card.sprite.setTexture(*card.texture);
-    return true;
-}
-
-void shuffleDeck(std::vector<Card>& deck) {
-    std::random_device rd;
-    std::mt19937 g(rd());
-    std::shuffle(deck.begin(), deck.end(), g);
-}
-
-void initializeGame(sf::RenderWindow& window, sf::Sprite& backgroundSprite, std::vector<Card>& deck, const sf::Font& font, bool& canBet) {
+void initializeGame(sf::RenderWindow& window, sf::Sprite& backgroundSprite, std::vector<Card>& deck, bool& canBet) {
     static sf::Texture backgroundTexture;
-    try {
-        if (!backgroundTexture.loadFromFile(ASSET_DIR + "backgrounds/space_cloud.png")) {
-            throw std::runtime_error("Failed to load background texture");
-        }
-    } catch (const std::exception& e) {
-        std::cerr << e.what() << std::endl;
+    if (!backgroundTexture.loadFromFile(ASSET_DIR + "backgrounds/space_cloud.png")) {
+        std::cerr << "Failed to load background texture" << std::endl;
         exit(-1);
     }
-
     backgroundSprite.setTexture(backgroundTexture);
-    initializeUIElements(font);
+    initializeUIElements();
     deck = createDeck();
     shuffleDeck(deck);
     canBet = true;
@@ -146,14 +117,14 @@ void handleButtonInputs(const sf::Event& event, std::vector<Card>& hand, bool& c
                 betAmount = 1;
             }
             updatePrizeTexts(prizeTexts, betAmount, window.getSize().x, window.getSize().y, prize);
-            betText.setString("Bet: " + std::to_string(betAmount));
+            betText->setString("Bet: " + std::to_string(betAmount));
         } else if (event.key.code == sf::Keyboard::D && roundInProgress) {
             if (canBet && playerCredits >= betAmount) {
                 playerCredits -= betAmount;
-                creditsText.setString("Credits: " + std::to_string(playerCredits));
+                creditsText->setString("Credits: " + std::to_string(playerCredits));
                 hand.clear();
                 for (int i = 0; i < 5; ++i) {
-                    hand.push_back(deck.back());
+                    hand.push_back(std::move(deck.back()));
                     deck.pop_back();
                 }
                 updateCardPositionsAndScales(hand, window);
@@ -165,7 +136,7 @@ void handleButtonInputs(const sf::Event& event, std::vector<Card>& hand, bool& c
         } else if (event.key.code == sf::Keyboard::C && canCollect) {
             prize = evaluateHand(hand, betAmount);
             playerCredits += prize;
-            creditsText.setString("Credits: " + std::to_string(playerCredits));
+            creditsText->setString("Credits: " + std::to_string(playerCredits));
             canCollect = false;
             canBet = true;
             gameOver = (playerCredits <= 0);
@@ -177,62 +148,14 @@ void handleButtonInputs(const sf::Event& event, std::vector<Card>& hand, bool& c
 }
 
 int main() {
-    // Initialize the window
-    sf::RenderWindow window;
-    window.create(sf::VideoMode(800, 600), "SoftyPoker");
+    sf::RenderWindow window(sf::VideoMode({800, 600}), "SoftyPoker");
 
-    sf::Sprite backgroundSprite;
-
-    // Load font
-    const std::string fontPath = ASSET_DIR + "fonts/arialnbi.ttf";
-    std::ifstream fontFile(fontPath, std::ios::binary | std::ios::ate);
-    if (!fontFile.is_open()) {
-        std::cerr << "Failed to open font file" << std::endl;
+    if (!font.loadFromFile(ASSET_DIR + "fonts/arial.ttf")) {
+        std::cerr << "Failed to load font" << std::endl;
         return -1;
     }
 
-    std::streamsize fontSize = fontFile.tellg();
-    fontFile.seekg(0, std::ios::beg);
-    std::vector<char> fontBuffer(fontSize);
-    if (!fontFile.read(fontBuffer.data(), fontSize)) {
-        std::cerr << "Failed to read font file" << std::endl;
-        return -1;
-    }
-
-    if (!font.loadFromMemory(fontBuffer.data(), fontSize)) {
-        std::cerr << "Failed to load font from memory" << std::endl;
-        return -1;
-    }
-
-    // Initialize text objects with the loaded font
-    instructions.setFont(font);
-    creditsText.setFont(font);
-    betText.setFont(font);
-    gameOverText.setFont(font);
-
-    // Initialize text properties
-    initializeUIElements(font);
-
-    // Initialize sounds
-    sf::Sound cardDealSound, heldSound, unheldSound;
-    initializeSounds(cardDealSound, heldSound, unheldSound);
-
-    // Create and shuffle the deck
-    std::vector<Card> deck = createDeck();
-    shuffleDeck(deck);
-
-    // Initialize game elements
-    initializeGame(window, backgroundSprite, deck, font, canBet);
-
-    // Game state variables
-    bool gameStarted = false;
-    bool roundInProgress = false;
-    bool drawFiveCards = true;
-    bool canCollect = false;
-    bool gamblingPhase = false;
-    int playerCredits = 10;
-    int prize = 0;
-    std::vector<Card> hand;
+    initializeUIElements();
 
     while (window.isOpen()) {
         sf::Event event;
@@ -240,43 +163,18 @@ int main() {
             if (event.type == sf::Event::Closed) {
                 window.close();
             }
-            handleButtonInputs(event, hand, canBet, betAmount, canCollect, prize, playerCredits, drawFiveCards, roundInProgress, gameOver, deck, window, backgroundSprite, creditsText, betText, gameStarted);
         }
 
-        // Clear the window
         window.clear();
-
-        // Draw background
-        window.draw(backgroundSprite);
-
-        // Draw UI elements
-        window.draw(instructions);
-        window.draw(creditsText);
-        window.draw(betText);
-        if (gameOver) {
-            window.draw(gameOverText);
-        }
-
-        // Draw cards
-        for (const auto& card : hand) {
-            window.draw(card.sprite);
-            if (card.isHeld) {
-                drawHeldCardHighlight(window, card);
-            }
-        }
-
-        // Draw prize texts
-        for (const auto& text : prizeTexts) {
-            window.draw(text);
-        }
-
-        // Display the window contents
+        window.draw(*instructions);
+        window.draw(*creditsText);
+        window.draw(*betText);
+        window.draw(*gameOverText);
         window.display();
     }
 
     return 0;
 }
-
 
 
 

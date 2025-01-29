@@ -1,4 +1,7 @@
 #include "Deck.h"
+#include "Card.h"
+#include <stdexcept>
+#include <string>
 
 const std::string ASSET_DIR = "Assets/";
 
@@ -23,6 +26,15 @@ void Deck::createDeck() {
     }
 }
 
+bool Deck::loadTexture(Card& card, const std::string& filePath) {
+    if (!card.texture->loadFromFile(filePath)) {
+        card.texture.reset();
+        return false;
+    }
+    card.sprite->setTexture(*card.texture);
+    return true;
+}
+
 void Deck::shuffle() {
     std::random_device rd;
     std::mt19937 g(rd());
@@ -33,7 +45,7 @@ Card Deck::dealCard() {
     if (cards.empty()) {
         throw std::out_of_range("No more cards to deal");
     }
-    Card dealtCard = cards.back();
+    Card dealtCard = std::move(cards.back());
     cards.pop_back();
     return dealtCard;
 }

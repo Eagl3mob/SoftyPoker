@@ -1,5 +1,7 @@
 #include "Deck.h"
 
+const std::string ASSET_DIR = "Assets/";
+
 Deck::Deck() {
     createDeck();
 }
@@ -13,7 +15,7 @@ void Deck::createDeck() {
             Card card;
             card.suit = suit;
             card.rank = rank;
-            std::string filePath = "D:/Programming/Projects/Assets/cards/" + std::string(1, rank) + std::string(1, suit) + ".png";
+            std::string filePath = ASSET_DIR + "cards/" + std::string(1, rank) + std::string(1, suit) + ".png";
             if (loadTexture(card, filePath)) {
                 cards.push_back(card);
             }

@@ -10,6 +10,11 @@ const float CARD_LEFT_OFFSET = 240.0f;
 const std::string ASSET_DIR = "D:/Projects/softypoker/";
 
 
+
+
+
+
+
 // Global Variables
 sf::Font font;
 std::unique_ptr<sf::Text> instructions;
@@ -375,7 +380,6 @@ void SoundManager::playSound(const std::string& soundName) {
 
 
 
-
 void initializeUIElements(GameState& state, sf::RenderWindow& window) {
     const int characterSize = 24;
     const sf::Color labelColor = sf::Color::Blue;
@@ -400,10 +404,6 @@ void initializeUIElements(GameState& state, sf::RenderWindow& window) {
     state.betText->setPosition(windowWidth * 0.05f, windowHeight * 0.1f);
     state.creditsText->setPosition(windowWidth * 0.2f, windowHeight * 0.1f);
 }
-
-
-
-
 
 int main() {
     sf::RenderWindow window(sf::VideoMode(1280, 720), "SoftyPoker");
@@ -430,7 +430,6 @@ int main() {
     game.run();
     return 0;
 }
-
 
 
 

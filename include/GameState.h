@@ -10,7 +10,7 @@
 class GameState {
 public:
     GameState();
-    
+
     sf::Font font;
     std::unique_ptr<sf::Text> instructions;
     std::unique_ptr<sf::Text> creditsText;

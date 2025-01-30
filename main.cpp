@@ -1,18 +1,7 @@
 
-#include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
-#include <filesystem>
-#include "Card.h"
-#include "Deck.h"
-#include "SoundManager.h"
-#include <vector>
-#include <map>
-#include <thread>
-#include <random>
-#include <iostream>
-#include <ctime>
-#include <cstdlib>
-#include <unordered_set>
+#include "Game.h"
+
 
 // Constants
 const float CARD_SCALE_FACTOR = 0.18f;
@@ -425,151 +414,17 @@ void initializeUIElements(const sf::Font& font, sf::RenderWindow& window) {
 
 
 
+
+
 int main() {
     sf::RenderWindow window(sf::VideoMode(1280, 720), "SoftyPoker");
-    sf::View view(sf::FloatRect(0, 0, 1280, 720));
-    window.setView(view);
-
-    // Load fonts, sounds, etc.
-    if (!font.loadFromFile(getAssetPath("fonts/arialnbi.ttf"))) {
-        std::cerr << "Failed to load font" << std::endl;
-        return -1;
-    }
-
-    SoundManager soundManager;
-    try {
-        soundManager.initializeAllSounds();
-        soundManager.playRandomBackgroundMusic();
-    } catch (const std::exception& e) {
-        std::cerr << "Sound initialization error: " << e.what() << std::endl;
-        return -1;
-    }
-
-    initializeUIElements(font, window);
-
-    // Initialize instructions
-    instructions = std::make_unique<sf::Text>();
-    instructions->setFont(font);
-    instructions->setCharacterSize(32);
-    instructions->setFillColor(sf::Color::Red);
-    instructions->setString("Press 'S' to start, 'B' to bet. In Building Phase ©2025 By T.E. & E.M.");
-    instructions->setPosition(
-        (window.getSize().x - instructions->getLocalBounds().width) / 2.f,
-        10.f
-    );
-
-    // Initialize prize texts
-    updatePrizeTexts(
-        prizeTexts,
-        betAmount,
-        font,
-        window.getSize().x,
-        window.getSize().y,
-        prize,
-        prizeMultipliers,
-        soundManager.prizeSound
-    );
-
-    // Handle initial resizing to position UI elements
-    handleResize(
-        window,
-        view,
-        backgroundSprite,
-        static_cast<int>(window.getSize().x),  // Ensure width is an int
-        static_cast<int>(window.getSize().y),  // Ensure height is an int
-        soundManager,
-        betLabelText,
-        betValueText,
-        creditsLabelText,
-        creditsValueText,
-        prizeTexts,
-        prizeValueOnlyText,
-        instructions
-    );
-
-    sf::Clock clock;
-    float speed = 200.0f;
-
-    while (window.isOpen()) {
-        sf::Event event;
-        while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed) {
-                window.close();
-            } else if (event.type == sf::Event::Resized) {
-                handleResize(
-                    window,
-                    view,
-                    backgroundSprite,
-                    static_cast<int>(event.size.width),  // Ensure width is an int
-                    static_cast<int>(event.size.height),  // Ensure height is an int
-                    soundManager,
-                    betLabelText,
-                    betValueText,
-                    creditsLabelText,
-                    creditsValueText,
-                    prizeTexts,
-                    prizeValueOnlyText,
-                    instructions
-                );
-            } else if (event.type == sf::Event::KeyPressed || event.type == sf::Event::KeyReleased) {
-                ButtonInputContext context{
-                    event,
-                    hand,
-                    canBet,
-                    betAmount,
-                    canCollect,
-                    prize,
-                    playerCredits,
-                    drawFiveCards,
-                    roundInProgress,
-                    gameOver,
-                    deck,
-                    window,
-                    backgroundSprite,
-                    creditsValueText,
-                    betValueText,
-                    gameStarted,
-                    prizeTexts,
-                    font,
-                    soundManager.cardDealSound,
-                    soundManager.heldSound,
-                    soundManager.unheldSound,
-                    soundManager.prizeSound,
-                    soundManager.countSound,
-                    instructions,
-                    gameOverText,
-                    gamblingPhase,
-                    soundManager,
-                    creditsLabelText,
-                    creditsValueText,
-                    betLabelText,
-                    betValueText,
-                    prizeMultipliers
-                };
-                handleButtonInputs(context, window);
-            }
-        }
-
-        float deltaTime = clock.restart().asSeconds();
-
-        // Rendering
-        window.clear();
-        window.draw(backgroundSprite);
-        window.draw(*creditsLabelText);
-        window.draw(*creditsValueText);
-        window.draw(*betLabelText);
-        window.draw(*betValueText);
-        window.draw(*instructions);
-        window.draw(*prizeValueOnlyText);
-        for (const auto& prizeText : prizeTexts) {
-            window.draw(*prizeText);
-        }
-        window.draw(*gameOverText);
-        window.display();
-    }
-
+    Game game;
+    game.initialize(window);
+    game.run();
     return 0;
 }
+
+
 
 
 

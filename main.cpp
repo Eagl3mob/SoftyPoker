@@ -127,6 +127,9 @@ int evaluateHand(const std::vector<Card>& hand, int betAmount);
 
 
 
+
+
+
 void initializeSounds(sf::Sound& cardDealSound, sf::Sound& heldSound, sf::Sound& unheldSound) {
     if (!cardDealBuffer.loadFromFile(ASSET_DIR + "sounds/deal.wav")) {
         std::cerr << "Failed to open sound file '" + ASSET_DIR + "sounds/deal.wav'\n";
@@ -160,9 +163,6 @@ void initializeSounds(sf::Sound& cardDealSound, sf::Sound& heldSound, sf::Sound&
 
 
 
-
-
-
 void initializeGame(sf::RenderWindow& window, sf::Sprite& backgroundSprite, std::vector<Card>& deck, bool& canBet) {
     static sf::Texture backgroundTexture;
     if (!backgroundTexture.loadFromFile(ASSET_DIR + "backgrounds/space_cloud.png")) {
@@ -170,7 +170,6 @@ void initializeGame(sf::RenderWindow& window, sf::Sprite& backgroundSprite, std:
         exit(-1);
     }
     backgroundSprite.setTexture(backgroundTexture);
-    initializeUIElements();
     deck = createDeck();
     shuffleDeck(deck);
     canBet = true;
@@ -178,6 +177,14 @@ void initializeGame(sf::RenderWindow& window, sf::Sprite& backgroundSprite, std:
     mainGameHand.clear(); // Initialize mainGameHand
     drawFiveCards = false; // Initialize drawFiveCards
 }
+
+
+
+
+
+
+
+
 
 void handleButtonInputs(const sf::Event& event, std::vector<Card>& hand, bool& canBet, int& betAmount, bool& canCollect, int& prize, int& playerCredits, bool& drawFiveCards, bool& roundInProgress, bool& gameOver, std::vector<Card>& deck, sf::RenderWindow& window, sf::Sprite& backgroundSprite, sf::Sound& cardDealSound, sf::Sound& heldSound, sf::Sound& unheldSound, bool& gamblingPhase) {
     if (event.type == sf::Event::KeyPressed) {
@@ -892,19 +899,20 @@ std::vector<Card> createDeck() {
 
 
 
-
-
-
 bool loadTexture(Card& card, const std::string& filePath) {
     card.texture = new sf::Texture();
     if (!card.texture->loadFromFile(filePath)) {
-        delete card.texture;
+        delete card.texture; // Free the allocated memory
         card.texture = nullptr;
         return false;
     }
     card.sprite.setTexture(*card.texture);
     return true;
 }
+
+
+
+
 
 
 

@@ -1,14 +1,14 @@
 
 #include <SFML/Graphics.hpp>
 #include "Game.h"
+#include "GameState.h"
 
-
-// Constants
 const float CARD_SCALE_FACTOR = 0.18f;
 const float CARD_SPACING = 10.5f;
 const float CARD_BOTTOM_OFFSET = 70.0f;
 const float CARD_LEFT_OFFSET = 240.0f;
-const std::string ASSET_DIR = "D:/Projects/softypoker/";  // Define ASSET_DIR
+const std::string ASSET_DIR = "D:/Projects/softypoker/";
+
 
 // Global Variables
 sf::Font font;
@@ -374,43 +374,32 @@ void SoundManager::playSound(const std::string& soundName) {
 
 
 
-void initializeUIElements(const sf::Font& font, sf::RenderWindow& window) {
-    // Common settings
+
+
+void initializeUIElements(GameState& state, sf::RenderWindow& window) {
     const int characterSize = 24;
     const sf::Color labelColor = sf::Color::Blue;
     const sf::Color valueColor = sf::Color::Green;
 
-    // Initialize a single function to reduce redundancy
-    auto initializeText = [&](std::unique_ptr<sf::Text>& text, const std::string& str, const sf::Font& font, int size, const sf::Color& color) {
+    auto initializeText = [&](std::unique_ptr<sf::Text>& text, const std::string& str, int size, const sf::Color& color) {
         text = std::make_unique<sf::Text>();
-        text->setFont(font);
+        text->setFont(state.font);
         text->setCharacterSize(size);
         text->setFillColor(color);
         text->setString(str);
     };
 
-    // Bet label and value setup
-    initializeText(betText, "Bet: 1", font, characterSize, valueColor);
+    initializeText(state.betText, "Bet: 1", characterSize, valueColor);
+    initializeText(state.creditsText, "Credits: 10", characterSize, valueColor);
+    initializeText(state.gameOverText, "0-INIT", 60, sf::Color(144, 238, 144));
+    state.gameOverText->setPosition(window.getSize().x * 0.70f, window.getSize().y * 0.50f + 40);
 
-    // Credits label and value setup
-    initializeText(creditsText, "Credits: 10", font, characterSize, valueColor);
-
-    // Initialize prize value text
-    initializeText(gameOverText, "0-INIT", font, 60, sf::Color(144, 238, 144));
-    gameOverText->setPosition(window.getSize().x * 0.70f, window.getSize().y * 0.50f + 40);
-
-    // Positioning UI elements
     float windowWidth = static_cast<float>(window.getSize().x);
     float windowHeight = static_cast<float>(window.getSize().y);
 
-    betText->setPosition(windowWidth * 0.05f, windowHeight * 0.1f);
-    creditsText->setPosition(windowWidth * 0.2f, windowHeight * 0.1f);
+    state.betText->setPosition(windowWidth * 0.05f, windowHeight * 0.1f);
+    state.creditsText->setPosition(windowWidth * 0.2f, windowHeight * 0.1f);
 }
-
-
-
-
-
 
 
 
@@ -418,11 +407,35 @@ void initializeUIElements(const sf::Font& font, sf::RenderWindow& window) {
 
 int main() {
     sf::RenderWindow window(sf::VideoMode(1280, 720), "SoftyPoker");
+    GameState state;
+
+    if (!state.font.loadFromFile(ASSET_DIR + "fonts/arialnbi.ttf")) {
+        std::cerr << "Failed to load font" << std::endl;
+        return -1;
+    }
+
+    try {
+        SoundManager soundManager;
+        soundManager.initializeAllSounds();
+        soundManager.playRandomBackgroundMusic();
+    } catch (const std::exception& e) {
+        std::cerr << "Sound initialization error: " << e.what() << std::endl;
+        return -1;
+    }
+
+    initializeUIElements(state, window);
+
     Game game;
     game.initialize(window);
     game.run();
     return 0;
 }
+
+
+
+
+
+
 
 
 

@@ -27,7 +27,9 @@ std::unique_ptr<sf::Text> instructions;
 std::unique_ptr<sf::Text> creditsText;
 std::unique_ptr<sf::Text> betText;
 std::unique_ptr<sf::Text> gameOverText;
-std::vector<sf::Text> prizeTexts;
+std::vector<std::unique_ptr<sf::Text>> prizeTexts;
+
+
 int betAmount = 1;
 bool canBet = true;
 bool gameOver = false;
@@ -383,50 +385,38 @@ void SoundManager::playSound(const std::string& soundName) {
 
 
 
-
-
-
-
-void initializeUIElements(const sf::Font& font, sf::RenderWindow& window, sf::Text& betLabelText, sf::Text& betValueText, sf::Text& creditsLabelText, sf::Text& creditsValueText, sf::Text& prizeValueOnlyText) {
+void initializeUIElements(const sf::Font& font, sf::RenderWindow& window) {
     // Common settings
     const int characterSize = 24;
     const sf::Color labelColor = sf::Color::Blue;
     const sf::Color valueColor = sf::Color::Green;
 
     // Initialize a single function to reduce redundancy
-    auto initializeText = [&](sf::Text& text, const std::string& str, const sf::Font& font, int size, const sf::Color& color) {
-        text.setFont(font);
-        text.setCharacterSize(size);
-        text.setFillColor(color);
-        text.setString(str);
+    auto initializeText = [&](std::unique_ptr<sf::Text>& text, const std::string& str, const sf::Font& font, int size, const sf::Color& color) {
+        text = std::make_unique<sf::Text>();
+        text->setFont(font);
+        text->setCharacterSize(size);
+        text->setFillColor(color);
+        text->setString(str);
     };
 
     // Bet label and value setup
-    initializeText(betLabelText, "Bet:", font, characterSize, labelColor);
-    initializeText(betValueText, "1", font, characterSize, valueColor); // Set initial bet value
+    initializeText(betText, "Bet: 1", font, characterSize, valueColor);
 
     // Credits label and value setup
-    initializeText(creditsLabelText, "Credits:", font, characterSize, labelColor);
-    initializeText(creditsValueText, "10", font, characterSize, valueColor); // Set initial credits value
+    initializeText(creditsText, "Credits: 10", font, characterSize, valueColor);
 
     // Initialize prize value text
-    prizeValueOnlyText.setFont(font);
-    prizeValueOnlyText.setCharacterSize(60); // Fixed character size
-    prizeValueOnlyText.setFillColor(sf::Color(144, 238, 144));
-    prizeValueOnlyText.setPosition(window.getSize().x * 0.70f, window.getSize().y * 0.50f + 40);
-    prizeValueOnlyText.setString("0-INIT"); // Unique identifier
+    initializeText(gameOverText, "0-INIT", font, 60, sf::Color(144, 238, 144));
+    gameOverText->setPosition(window.getSize().x * 0.70f, window.getSize().y * 0.50f + 40);
 
     // Positioning UI elements
     float windowWidth = static_cast<float>(window.getSize().x);
     float windowHeight = static_cast<float>(window.getSize().y);
 
-    betLabelText.setPosition(windowWidth * 0.05f, windowHeight * 0.1f);
-    betValueText.setPosition(windowWidth * 0.2f, windowHeight * 0.1f);
-
-    creditsLabelText.setPosition(windowWidth * 0.05f, windowHeight * 0.2f);
-    creditsValueText.setPosition(windowWidth * 0.2f, windowHeight * 0.2f);
+    betText->setPosition(windowWidth * 0.05f, windowHeight * 0.1f);
+    creditsText->setPosition(windowWidth * 0.2f, windowHeight * 0.1f);
 }
-
 
 
 
@@ -441,7 +431,6 @@ int main() {
     window.setView(view);
 
     // Load fonts, sounds, etc.
-    sf::Font font;
     if (!font.loadFromFile(getAssetPath("fonts/arialnbi.ttf"))) {
         std::cerr << "Failed to load font" << std::endl;
         return -1;
@@ -456,55 +445,16 @@ int main() {
         return -1;
     }
 
-    sf::Text creditsLabelText, creditsValueText, betLabelText, betValueText, instructions, gameOverText, prizeValueOnlyText;
-    std::vector<sf::Text> prizeTexts;
-    int betAmount = 1, playerCredits = 10, prize = 0;
-    bool canBet = true, gameStarted = false, drawFiveCards = true, roundInProgress = false, gameOver = false, gamblingPhase = false;
-    std::vector<Card> hand, deck = createDeck();
-    sf::Sprite backgroundSprite;
-
-    // Load background textures
-    std::vector<sf::Texture> backgroundTextures;
-    std::vector<std::string> backgroundPaths = {
-        getAssetPath("images/fantasy_girl.png"),
-        getAssetPath("images/fire_girl.png"),
-        getAssetPath("images/sofa_girl.png"),
-        getAssetPath("images/claws_girl.png"),
-        getAssetPath("images/blond_girl.png"),
-        getAssetPath("images/skul_girl.png")
-    };
-
-    for (const auto& path : backgroundPaths) {
-        sf::Texture texture;
-        if (!texture.loadFromFile(path)) {
-            std::cerr << "Failed to load texture from " << path << std::endl;
-            return -1;
-        }
-        backgroundTextures.push_back(texture);
-    }
-
-    // Set random background
-    std::srand(static_cast<unsigned>(std::time(nullptr)));
-    int randomIndex = std::rand() % backgroundTextures.size();
-    backgroundSprite.setTexture(backgroundTextures[randomIndex]);
-
-    // Scale and position background
-    backgroundSprite.setScale(
-        static_cast<float>(window.getSize().x) / backgroundSprite.getGlobalBounds().width,
-        static_cast<float>(window.getSize().y) / backgroundSprite.getGlobalBounds().height
-    );
-    backgroundSprite.setPosition(0, 0);
-
-    // Initialize UI elements
-    initializeUIElements(font, window, betLabelText, betValueText, creditsLabelText, creditsValueText, prizeValueOnlyText);
+    initializeUIElements(font, window);
 
     // Initialize instructions
-    instructions.setFont(font);
-    instructions.setCharacterSize(32);
-    instructions.setFillColor(sf::Color::Red);
-    instructions.setString("Press 'S' to start, 'B' to bet. In Building Phase ©2025 By T.E. & E.M.");
-    instructions.setPosition(
-        (window.getSize().x - instructions.getLocalBounds().width) / 2.f,
+    instructions = std::make_unique<sf::Text>();
+    instructions->setFont(font);
+    instructions->setCharacterSize(32);
+    instructions->setFillColor(sf::Color::Red);
+    instructions->setString("Press 'S' to start, 'B' to bet. In Building Phase ©2025 By T.E. & E.M.");
+    instructions->setPosition(
+        (window.getSize().x - instructions->getLocalBounds().width) / 2.f,
         10.f
     );
 
@@ -605,24 +555,21 @@ int main() {
         // Rendering
         window.clear();
         window.draw(backgroundSprite);
-        window.draw(creditsLabelText);
-        window.draw(creditsValueText);
-        window.draw(betLabelText);
-        window.draw(betValueText);
-        window.draw(instructions);
-        window.draw(prizeValueOnlyText);
+        window.draw(*creditsLabelText);
+        window.draw(*creditsValueText);
+        window.draw(*betLabelText);
+        window.draw(*betValueText);
+        window.draw(*instructions);
+        window.draw(*prizeValueOnlyText);
         for (const auto& prizeText : prizeTexts) {
-            window.draw(prizeText);
+            window.draw(*prizeText);
         }
-        window.draw(gameOverText);
+        window.draw(*gameOverText);
         window.display();
     }
 
     return 0;
 }
-
-
-
 
 
 

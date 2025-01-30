@@ -10,21 +10,16 @@
 #include <thread>
 #include <random>
 #include <iostream>
-
 #include <ctime>
 #include <cstdlib>
 #include <unordered_set>
-
-
 
 // Constants
 const float CARD_SCALE_FACTOR = 0.18f;
 const float CARD_SPACING = 10.5f;
 const float CARD_BOTTOM_OFFSET = 70.0f;
 const float CARD_LEFT_OFFSET = 240.0f;
-
-
-
+const std::string ASSET_DIR = "D:/Projects/softypoker/";  // Define ASSET_DIR
 
 // Global Variables
 sf::Font font;
@@ -42,7 +37,6 @@ bool drawFiveCards = false;
 sf::SoundBuffer cardDealBuffer; // Declare as global
 sf::SoundBuffer heldBuffer; // Declare as global
 sf::SoundBuffer unheldBuffer; // Declare as global
-
 
 
 
@@ -96,19 +90,9 @@ struct ButtonInputContext {
 
 
 
-
-
-
-
 std::string getAssetPath(const std::string& relativePath) {
     return std::filesystem::current_path().string() + "/Assets/" + relativePath;
 }
-
-
-
-
-
-
 
 
 
@@ -374,15 +358,6 @@ void SoundManager::playSound(const std::string& soundName) {
 
 
 
-
-
-
-
-
-
-
-
-
 void initializeUIElements(const sf::Font& font, sf::RenderWindow& window, sf::Text& betLabelText, sf::Text& betValueText, sf::Text& creditsLabelText, sf::Text& creditsValueText, sf::Text& prizeValueOnlyText) {
     // Common settings
     const int characterSize = 24;
@@ -422,15 +397,6 @@ void initializeUIElements(const sf::Font& font, sf::RenderWindow& window, sf::Te
     creditsLabelText.setPosition(windowWidth * 0.05f, windowHeight * 0.2f);
     creditsValueText.setPosition(windowWidth * 0.2f, windowHeight * 0.2f);
 }
-
-
-
-
-
-
-
-
-
 
 
 
@@ -897,19 +863,15 @@ std::vector<Card> createDeck() {
 
 
 
-
-
 bool loadTexture(Card& card, const std::string& filePath) {
-    card.texture = new sf::Texture();
+    card.texture = std::make_unique<sf::Texture>();
     if (!card.texture->loadFromFile(filePath)) {
-        delete card.texture; // Free the allocated memory
-        card.texture = nullptr;
+        card.texture.reset(); // Reset the smart pointer
         return false;
     }
-    card.sprite.setTexture(*card.texture);
+    card.sprite->setTexture(*card.texture);
     return true;
 }
-
 
 
 
@@ -1087,9 +1049,6 @@ int evaluateHand(const std::vector<Card>& hand, int betAmount) {
 
 
 
-
-
-
 void initializeGamblingGame(std::vector<Card>& deck, Card& currentCard) {
     deck = createDeck();
     shuffleDeck(deck);
@@ -1097,14 +1056,15 @@ void initializeGamblingGame(std::vector<Card>& deck, Card& currentCard) {
     deck.pop_back();
 
     // Set the initial position and scale for the card
-    currentCard.sprite.setPosition(200, 100); // Example position, adjust as needed
-    currentCard.sprite.setScale(0.13f, 0.13f); // Example scale, adjust as needed
+    currentCard.sprite->setPosition(200, 100); // Example position, adjust as needed
+    currentCard.sprite->setScale(0.13f, 0.13f); // Example scale, adjust as needed
 
     // Debug statement to confirm texture loading
     if (!currentCard.texture) {
         std::cerr << "Failed to load current card texture" << std::endl;
     }
 }
+
 
 
 
@@ -1153,6 +1113,8 @@ std::vector<Card> createGamblingDeck() {
     }
     return deck;
 }
+
+
 
 
 
@@ -1246,6 +1208,9 @@ void startGamblingPhase(sf::RenderWindow& window, sf::Sprite& backgroundSprite, 
         window.display();
     }
 }
+
+
+
 
 
 bool playGamblingRound(std::vector<Card>& deck, Card& currentCard, bool guessHigher, std::unordered_set<int>& usedCards) {

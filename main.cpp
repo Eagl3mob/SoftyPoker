@@ -166,55 +166,84 @@ void initializeGame(sf::RenderWindow& window, sf::Sprite& backgroundSprite, std:
 
 
 
+void handleStartGame(bool& gameStarted, bool& roundInProgress, bool& canCollect, bool& gameOver, int& playerCredits, int& prize, int betAmount, std::vector<sf::Text>& prizeTexts, sf::RenderWindow& window) {
+    gameStarted = true;
+    roundInProgress = true;
+    canCollect = false;
+    gameOver = false;
+    playerCredits = 10;
+    prize = 0;
+    updatePrizeTexts(prizeTexts, betAmount, window.getSize().x, window.getSize().y, 0);
+}
 
+void handleBetIncrease(bool& canBet, int& betAmount, int playerCredits, std::vector<sf::Text>& prizeTexts, sf::RenderWindow& window, sf::Text& betText, int prize) {
+    if (canBet) {
+        if (betAmount < std::min(playerCredits, 5)) {
+            betAmount++;
+        } else {
+            betAmount = 1;
+        }
+        updatePrizeTexts(prizeTexts, betAmount, window.getSize().x, window.getSize().y, prize);
+        betText->setString("Bet: " + std::to_string(betAmount));
+    }
+}
 
+void handleDealCards(bool& canBet, bool& roundInProgress, int& playerCredits, int betAmount, std::vector<Card>& hand, std::vector<Card>& deck, sf::RenderWindow& window, sf::Text& creditsText, bool& drawFiveCards, bool& canCollect) {
+    if (canBet && playerCredits >= betAmount) {
+        playerCredits -= betAmount;
+        creditsText->setString("Credits: " + std::to_string(playerCredits));
+        hand.clear();
+        for (int i = 0; i < 5; ++i) {
+            hand.push_back(std::move(deck.back()));
+            deck.pop_back();
+        }
+        updateCardPositionsAndScales(hand, window);
+        drawFiveCards = false;
+        canCollect = true;
+        canBet = false;
+        roundInProgress = false;
+    }
+}
 
-
-void handleButtonInputs(const sf::Event& event, std::vector<Card>& hand, bool& canBet, int& betAmount, bool& canCollect, int& prize, int& playerCredits, bool& drawFiveCards, bool& roundInProgress, bool& gameOver, std::vector<Card>& deck, sf::RenderWindow& window, sf::Sprite& backgroundSprite, sf::Sound& cardDealSound, sf::Sound& heldSound, sf::Sound& unheldSound, bool& gamblingPhase) {
-    if (event.type == sf::Event::KeyPressed) {
-        if (event.key.code == sf::Keyboard::S && !gameStarted) {
-            gameStarted = true;
-            roundInProgress = true;
-            canCollect = false;
-            gameOver = false;
-            playerCredits = 10;
-            prize = 0;
-            updatePrizeTexts(prizeTexts, betAmount, window.getSize().x, window.getSize().y, 0);
-        } else if (event.key.code == sf::Keyboard::B && canBet) {
-            if (betAmount < std::min(playerCredits, 5)) {
-                betAmount++;
-            } else {
-                betAmount = 1;
-            }
+void handleCollectPrize(bool& canCollect, int& prize, int betAmount, std::vector<Card>& hand, int& playerCredits, sf::Text& creditsText, bool& canBet, bool& gameOver, bool& gameStarted, std::vector<sf::Text>& prizeTexts, sf::RenderWindow& window) {
+    if (canCollect) {
+        prize = evaluateHand(hand, betAmount);
+        playerCredits += prize;
+        creditsText->setString("Credits: " + std::to_string(playerCredits));
+        canCollect = false;
+        canBet = true;
+        gameOver = (playerCredits <= 0);
+        if (gameOver) {
+            gameStarted = false; // Reset gameStarted here
+        } else {
             updatePrizeTexts(prizeTexts, betAmount, window.getSize().x, window.getSize().y, prize);
-            betText->setString("Bet: " + std::to_string(betAmount));
-        } else if (event.key.code == sf::Keyboard::D && roundInProgress) {
-            if (canBet && playerCredits >= betAmount) {
-                playerCredits -= betAmount;
-                creditsText->setString("Credits: " + std::to_string(playerCredits));
-                hand.clear();
-                for (int i = 0; i < 5; ++i) {
-                    hand.push_back(std::move(deck.back()));
-                    deck.pop_back();
+        }
+    }
+}
+
+
+
+void handleButtonInputs(const sf::Event& event, std::vector<Card>& hand, bool& canBet, int& betAmount, bool& canCollect, int& prize, int& playerCredits, bool& drawFiveCards, bool& roundInProgress, bool& gameOver, std::vector<Card>& deck, sf::RenderWindow& window, sf::Sprite& backgroundSprite, sf::Text& creditsText, sf::Text& betText, bool& gameStarted, std::vector<sf::Text>& prizeTexts, const sf::Font& font, sf::Sound& cardDealSound, sf::Sound& heldSound, sf::Sound& unheldSound, sf::Sound& prizeSound, sf::Sound& countSound, sf::Text& instructions, sf::Text& gameOverText, bool& gamblingPhase, SoundManager& soundManager, sf::Text& creditsLabelText, sf::Text& creditsValueText, sf::Text& betLabelText, sf::Text& betValueText, const std::map<std::string, int>& prizeMultipliers) {
+    if (event.type == sf::Event::KeyPressed) {
+        switch (event.key.code) {
+            case sf::Keyboard::S:
+                if (!gameStarted) {
+                    handleStartGame(gameStarted, roundInProgress, canCollect, gameOver, playerCredits, prize, betAmount, prizeTexts, window);
                 }
-                updateCardPositionsAndScales(hand, window);
-                drawFiveCards = false;
-                canCollect = true;
-                canBet = false;
-                roundInProgress = false;
-            }
-        } else if (event.key.code == sf::Keyboard::C && canCollect) {
-            prize = evaluateHand(hand, betAmount);
-            playerCredits += prize;
-            creditsText->setString("Credits: " + std::to_string(playerCredits));
-            canCollect = false;
-            canBet = true;
-            gameOver = (playerCredits <= 0);
-            if (gameOver) {
-                gameStarted = false; // Reset gameStarted here
-            } else {
-                updatePrizeTexts(prizeTexts, betAmount, window.getSize().x, window.getSize().y, prize);
-            }
+                break;
+            case sf::Keyboard::B:
+                handleBetIncrease(canBet, betAmount, playerCredits, prizeTexts, window, betText, prize);
+                break;
+            case sf::Keyboard::D:
+                if (roundInProgress) {
+                    handleDealCards(canBet, roundInProgress, playerCredits, betAmount, hand, deck, window, creditsText, drawFiveCards, canCollect);
+                }
+                break;
+            case sf::Keyboard::C:
+                handleCollectPrize(canCollect, prize, betAmount, hand, playerCredits, creditsText, canBet, gameOver, gameStarted, prizeTexts, window);
+                break;
+            default:
+                break;
         }
     }
 }

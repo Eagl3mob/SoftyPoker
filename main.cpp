@@ -16,8 +16,6 @@ std::string getAssetPath(const std::string& relativePath) {
 
 
 
-
-
 // Global Variables
 sf::Font font;
 std::unique_ptr<sf::Text> instructions;
@@ -108,43 +106,52 @@ int evaluateHand(const std::vector<Card>& hand, int betAmount);
 
 
 
-// Update all references to the ASSET_DIR with the getAssetPath function
-void initializeSounds(sf::Sound& cardDealSound, sf::Sound& heldSound, sf::Sound& unheldSound) {
-    if (!cardDealBuffer.loadFromFile(getAssetPath("sounds/deal.wav"))) {
+void initializeSounds(GameState& state, sf::Sound& cardDealSound, sf::Sound& heldSound, sf::Sound& unheldSound) {
+    if (!state.cardDealBuffer.loadFromFile(getAssetPath("sounds/deal.wav"))) {
         std::cerr << "Failed to open sound file '" + getAssetPath("sounds/deal.wav") + "'\n";
         throw std::runtime_error("Failed to load deal.wav");
     }
-    cardDealSound.setBuffer(cardDealBuffer);
+    cardDealSound.setBuffer(state.cardDealBuffer);
     cardDealSound.setVolume(100);
 
-    if (!heldBuffer.loadFromFile(getAssetPath("sounds/hold.wav"))) {
+    if (!state.heldBuffer.loadFromFile(getAssetPath("sounds/hold.wav"))) {
         std::cerr << "Failed to open sound file '" + getAssetPath("sounds/hold.wav") + "'\n";
         throw std::runtime_error("Failed to load hold.wav");
     }
-    heldSound.setBuffer(heldBuffer);
+    heldSound.setBuffer(state.heldBuffer);
     heldSound.setVolume(100);
 
-    if (!unheldBuffer.loadFromFile(getAssetPath("sounds/unheld.wav"))) {
+    if (!state.unheldBuffer.loadFromFile(getAssetPath("sounds/unheld.wav"))) {
         std::cerr << "Failed to open sound file '" + getAssetPath("sounds/unheld.wav") + "'\n";
         throw std::runtime_error("Failed to load unheld.wav");
     }
-    unheldSound.setBuffer(unheldBuffer);
+    unheldSound.setBuffer(state.unheldBuffer);
     unheldSound.setVolume(100);
 }
 
-void initializeGame(sf::RenderWindow& window, sf::Sprite& backgroundSprite, std::vector<Card>& deck, bool& canBet) {
+void initializeGame(GameState& state, sf::RenderWindow& window, sf::Sprite& backgroundSprite, std::vector<Card>& deck) {
     static sf::Texture backgroundTexture;
     if (!backgroundTexture.loadFromFile(getAssetPath("backgrounds/space_cloud.png"))) {
         std::cerr << "Failed to load background texture" << std::endl;
-        exit(-1);
+        throw std::runtime_error("Failed to load background texture");
     }
     backgroundSprite.setTexture(backgroundTexture);
     deck = createDeck();
     shuffleDeck(deck);
-    canBet = true;
-    gameStarted = false; // Reset gameStarted here
-    mainGameHand.clear(); // Initialize mainGameHand
-    drawFiveCards = false; // Initialize drawFiveCards
+    state.canBet = true;
+    state.gameStarted = false;
+    state.mainGameHand.clear();
+    state.drawFiveCards = false;
+}
+
+void handleStartGame(GameState& state, bool& roundInProgress, bool& canCollect, int& playerCredits, int& prize, sf::RenderWindow& window) {
+    state.gameStarted = true;
+    roundInProgress = true;
+    canCollect = false;
+    state.gameOver = false;
+    playerCredits = 10;
+    prize = 0;
+    updatePrizeTexts(state.prizeTexts, state.betAmount, window.getSize().x, window.getSize().y, 0);
 }
 
 int main() {
@@ -158,7 +165,7 @@ int main() {
 
     try {
         SoundManager soundManager;
-        soundManager.initializeAllSounds();
+        initializeSounds(state, soundManager.cardDealSound, soundManager.heldSound, soundManager.unheldSound);
         soundManager.playRandomBackgroundMusic();
     } catch (const std::exception& e) {
         std::cerr << "Sound initialization error: " << e.what() << std::endl;
@@ -168,8 +175,8 @@ int main() {
     initializeUIElements(state, window);
 
     Game game;
-    game.initialize(window);
-    game.run();
+    initializeGame(state, window, game.backgroundSprite, game.deck);
+    game.run(state, window);
     return 0;
 }
 
@@ -181,15 +188,8 @@ int main() {
 
 
 
-void handleStartGame(bool& gameStarted, bool& roundInProgress, bool& canCollect, bool& gameOver, int& playerCredits, int& prize, int betAmount, std::vector<sf::Text>& prizeTexts, sf::RenderWindow& window) {
-    gameStarted = true;
-    roundInProgress = true;
-    canCollect = false;
-    gameOver = false;
-    playerCredits = 10;
-    prize = 0;
-    updatePrizeTexts(prizeTexts, betAmount, window.getSize().x, window.getSize().y, 0);
-}
+
+
 
 void handleBetIncrease(bool& canBet, int& betAmount, int playerCredits, std::vector<sf::Text>& prizeTexts, sf::RenderWindow& window, sf::Text& betText, int prize) {
     if (canBet) {

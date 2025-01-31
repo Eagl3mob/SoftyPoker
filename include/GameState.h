@@ -1,16 +1,13 @@
-#ifndef GAMESTATE_H
-#define GAMESTATE_H
+#pragma once
 
 #include <SFML/Graphics.hpp>
+#include <memory>
 #include <vector>
 #include <map>
-#include <memory>
 #include "Card.h"
 
 class GameState {
 public:
-    GameState();
-
     sf::Font font;
     std::unique_ptr<sf::Text> instructions;
     std::unique_ptr<sf::Text> creditsText;
@@ -27,8 +24,7 @@ public:
     sf::SoundBuffer cardDealBuffer;
     sf::SoundBuffer heldBuffer;
     sf::SoundBuffer unheldBuffer;
-
     std::map<std::string, int> prizeMultipliers;
-};
 
-#endif // GAMESTATE_H
+    GameState();
+};

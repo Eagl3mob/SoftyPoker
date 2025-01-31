@@ -1,5 +1,6 @@
 
 #include <SFML/Graphics.hpp>
+#include <filesystem>
 #include "Game.h"
 #include "GameState.h"
 
@@ -7,8 +8,10 @@ const float CARD_SCALE_FACTOR = 0.18f;
 const float CARD_SPACING = 10.5f;
 const float CARD_BOTTOM_OFFSET = 70.0f;
 const float CARD_LEFT_OFFSET = 240.0f;
-const std::string ASSET_DIR = "D:/Projects/softypoker/";
 
+std::string getAssetPath(const std::string& relativePath) {
+    return std::filesystem::current_path().string() + "/Assets/" + relativePath;
+}
 
 
 
@@ -86,12 +89,6 @@ struct ButtonInputContext {
 
 
 
-std::string getAssetPath(const std::string& relativePath) {
-    return std::filesystem::current_path().string() + "/Assets/" + relativePath;
-}
-
-
-
 
 // Function Prototypes
 void initializeUIElements();
@@ -110,42 +107,34 @@ int evaluateHand(const std::vector<Card>& hand, int betAmount);
 
 
 
+
+// Update all references to the ASSET_DIR with the getAssetPath function
 void initializeSounds(sf::Sound& cardDealSound, sf::Sound& heldSound, sf::Sound& unheldSound) {
-    if (!cardDealBuffer.loadFromFile(ASSET_DIR + "sounds/deal.wav")) {
-        std::cerr << "Failed to open sound file '" + ASSET_DIR + "sounds/deal.wav'\n";
+    if (!cardDealBuffer.loadFromFile(getAssetPath("sounds/deal.wav"))) {
+        std::cerr << "Failed to open sound file '" + getAssetPath("sounds/deal.wav") + "'\n";
         throw std::runtime_error("Failed to load deal.wav");
     }
     cardDealSound.setBuffer(cardDealBuffer);
     cardDealSound.setVolume(100);
 
-    if (!heldBuffer.loadFromFile(ASSET_DIR + "sounds/hold.wav")) {
-        std::cerr << "Failed to open sound file '" + ASSET_DIR + "sounds/hold.wav'\n";
+    if (!heldBuffer.loadFromFile(getAssetPath("sounds/hold.wav"))) {
+        std::cerr << "Failed to open sound file '" + getAssetPath("sounds/hold.wav") + "'\n";
         throw std::runtime_error("Failed to load hold.wav");
     }
     heldSound.setBuffer(heldBuffer);
     heldSound.setVolume(100);
 
-    if (!unheldBuffer.loadFromFile(ASSET_DIR + "sounds/unheld.wav")) {
-        std::cerr << "Failed to open sound file '" + ASSET_DIR + "sounds/unheld.wav'\n";
+    if (!unheldBuffer.loadFromFile(getAssetPath("sounds/unheld.wav"))) {
+        std::cerr << "Failed to open sound file '" + getAssetPath("sounds/unheld.wav") + "'\n";
         throw std::runtime_error("Failed to load unheld.wav");
     }
     unheldSound.setBuffer(unheldBuffer);
     unheldSound.setVolume(100);
 }
 
-
-
-
-
-
-
-
-
-
-
 void initializeGame(sf::RenderWindow& window, sf::Sprite& backgroundSprite, std::vector<Card>& deck, bool& canBet) {
     static sf::Texture backgroundTexture;
-    if (!backgroundTexture.loadFromFile(ASSET_DIR + "backgrounds/space_cloud.png")) {
+    if (!backgroundTexture.loadFromFile(getAssetPath("backgrounds/space_cloud.png"))) {
         std::cerr << "Failed to load background texture" << std::endl;
         exit(-1);
     }
@@ -157,6 +146,36 @@ void initializeGame(sf::RenderWindow& window, sf::Sprite& backgroundSprite, std:
     mainGameHand.clear(); // Initialize mainGameHand
     drawFiveCards = false; // Initialize drawFiveCards
 }
+
+int main() {
+    sf::RenderWindow window(sf::VideoMode(1280, 720), "SoftyPoker");
+    GameState state;
+
+    if (!state.font.loadFromFile(getAssetPath("fonts/arialnbi.ttf"))) {
+        std::cerr << "Failed to load font" << std::endl;
+        return -1;
+    }
+
+    try {
+        SoundManager soundManager;
+        soundManager.initializeAllSounds();
+        soundManager.playRandomBackgroundMusic();
+    } catch (const std::exception& e) {
+        std::cerr << "Sound initialization error: " << e.what() << std::endl;
+        return -1;
+    }
+
+    initializeUIElements(state, window);
+
+    Game game;
+    game.initialize(window);
+    game.run();
+    return 0;
+}
+
+
+
+
 
 
 
@@ -403,32 +422,6 @@ void initializeUIElements(GameState& state, sf::RenderWindow& window) {
 
     state.betText->setPosition(windowWidth * 0.05f, windowHeight * 0.1f);
     state.creditsText->setPosition(windowWidth * 0.2f, windowHeight * 0.1f);
-}
-
-int main() {
-    sf::RenderWindow window(sf::VideoMode(1280, 720), "SoftyPoker");
-    GameState state;
-
-    if (!state.font.loadFromFile(ASSET_DIR + "fonts/arialnbi.ttf")) {
-        std::cerr << "Failed to load font" << std::endl;
-        return -1;
-    }
-
-    try {
-        SoundManager soundManager;
-        soundManager.initializeAllSounds();
-        soundManager.playRandomBackgroundMusic();
-    } catch (const std::exception& e) {
-        std::cerr << "Sound initialization error: " << e.what() << std::endl;
-        return -1;
-    }
-
-    initializeUIElements(state, window);
-
-    Game game;
-    game.initialize(window);
-    game.run();
-    return 0;
 }
 
 

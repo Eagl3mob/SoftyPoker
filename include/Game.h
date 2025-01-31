@@ -12,6 +12,11 @@ public:
     Game();
     void initialize(sf::RenderWindow& window, GameState& state);
     void run(GameState& state);
+    sf::Sprite& getBackgroundSprite(); // Corrected to return a reference
+
+    // Make these public
+    std::vector<Card> createDeck();
+    void shuffleDeck(std::vector<Card>& deck);
 
 private:
     sf::RenderWindow* window;
@@ -24,5 +29,4 @@ private:
     void handleButtonInputs(const sf::Event& event, GameState& state);
     void updatePrizeTexts(GameState& state, int betAmount, int windowWidth, int windowHeight, int prize);
     void updateCardPositionsAndScales(std::vector<Card>& hand, sf::RenderWindow& window);
-    std::vector<Card> createDeck();  // Add this line
 };

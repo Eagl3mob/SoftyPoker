@@ -1,7 +1,7 @@
-
 #include "Game.h"
 #include <iostream>
 #include <filesystem>
+#include <algorithm> // Include algorithm for shuffle
 
 const std::string ASSET_DIR = "D:/Projects/softypoker/";
 
@@ -28,11 +28,9 @@ void Game::initialize(sf::RenderWindow& window, GameState& state) {
     initializeUIElements(state);
 }
 
-
-
-
-
-
+sf::Sprite& Game::getBackgroundSprite() {
+    return backgroundSprite;
+}
 
 std::vector<Card> Game::createDeck() {
     std::vector<Card> deck;
@@ -45,7 +43,8 @@ std::vector<Card> Game::createDeck() {
             card.suit = suit;
             card.rank = rank;
             std::string filePath = getAssetPath("cards/" + std::string(1, rank) + std::string(1, suit) + ".png");
-            if (loadTexture(card, filePath)) {
+            if (card.texture->loadFromFile(filePath)) {
+                card.sprite->setTexture(*card.texture);
                 deck.push_back(card);
             }
         }
@@ -53,10 +52,11 @@ std::vector<Card> Game::createDeck() {
     return deck;
 }
 
-
-
-
-
+void Game::shuffleDeck(std::vector<Card>& deck) {
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(deck.begin(), deck.end(), g);
+}
 
 void Game::run(GameState& state) {
     sf::Clock clock;
@@ -112,5 +112,3 @@ void Game::initializeUIElements(GameState& state) {
     state.betText->setPosition(windowWidth * 0.05f, windowHeight * 0.1f);
     state.creditsText->setPosition(windowWidth * 0.2f, windowHeight * 0.1f);
 }
-
-// Implement other methods (handleResize, handleButtonInputs, handleStartGame, handleBetIncrease, handleDealCards, handleCollectPrize, updatePrizeTexts, updateCardPositionsAndScales)

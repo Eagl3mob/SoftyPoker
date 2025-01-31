@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>  // Include the SFML Audio module
 #include <memory>
 #include <vector>
 #include <map>

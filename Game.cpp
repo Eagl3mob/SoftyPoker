@@ -28,6 +28,36 @@ void Game::initialize(sf::RenderWindow& window, GameState& state) {
     initializeUIElements(state);
 }
 
+
+
+
+
+
+
+std::vector<Card> Game::createDeck() {
+    std::vector<Card> deck;
+    const char ranks[] = {'2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A'};
+    const char suits[] = {'H', 'D', 'C', 'S'};
+
+    for (char suit : suits) {
+        for (char rank : ranks) {
+            Card card;
+            card.suit = suit;
+            card.rank = rank;
+            std::string filePath = getAssetPath("cards/" + std::string(1, rank) + std::string(1, suit) + ".png");
+            if (loadTexture(card, filePath)) {
+                deck.push_back(card);
+            }
+        }
+    }
+    return deck;
+}
+
+
+
+
+
+
 void Game::run(GameState& state) {
     sf::Clock clock;
     while (window->isOpen()) {

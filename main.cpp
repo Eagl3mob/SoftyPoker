@@ -1,8 +1,24 @@
 
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
+#include <iostream>
 #include <filesystem>
+#include <thread>  // Include for std::this_thread::sleep_for
+#include <random>  // Include for std::random_device and std::mt19937
+#include <unordered_set>  // Include for std::unordered_set
 #include "Game.h"
 #include "GameState.h"
+#include "Deck.h"
+#include "Card.h"
+
+
+
+
+
+
+
+
+
 
 const float CARD_SCALE_FACTOR = 0.18f;
 const float CARD_SPACING = 10.5f;
@@ -88,23 +104,6 @@ struct ButtonInputContext {
 
 
 
-// Function Prototypes
-void initializeUIElements();
-void initializeSounds(sf::Sound& cardDealSound, sf::Sound& heldSound, sf::Sound& unheldSound);
-std::vector<Card> createDeck();
-void shuffleDeck(std::vector<Card>& deck);
-bool loadTexture(Card& card, const std::string& filePath);
-void initializeGame(sf::RenderWindow& window, sf::Sprite& backgroundSprite, std::vector<Card>& deck, bool& canBet);
-void handleButtonInputs(const sf::Event& event, std::vector<Card>& hand, bool& canBet, int& betAmount, bool& canCollect, int& prize, int& playerCredits, bool& drawFiveCards, bool& roundInProgress, bool& gameOver, std::vector<Card>& deck, sf::RenderWindow& window, sf::Sprite& backgroundSprite, sf::Sound& cardDealSound, sf::Sound& heldSound, sf::Sound& unheldSound, bool& gamblingPhase);
-void updatePrizeTexts(std::vector<sf::Text>& prizeTexts, int betAmount, int windowWidth, int windowHeight, int prize);
-void updateCardPositionsAndScales(std::vector<Card>& hand, sf::RenderWindow& window);
-int evaluateHand(const std::vector<Card>& hand, int betAmount);
-
-
-
-
-
-
 
 void initializeSounds(GameState& state, sf::Sound& cardDealSound, sf::Sound& heldSound, sf::Sound& unheldSound) {
     if (!state.cardDealBuffer.loadFromFile(getAssetPath("sounds/deal.wav"))) {
@@ -129,20 +128,25 @@ void initializeSounds(GameState& state, sf::Sound& cardDealSound, sf::Sound& hel
     unheldSound.setVolume(100);
 }
 
-void initializeGame(GameState& state, sf::RenderWindow& window, sf::Sprite& backgroundSprite, std::vector<Card>& deck) {
+
+
+void initializeGame(GameState& state, sf::RenderWindow& window, sf::Sprite& backgroundSprite, Deck& deck) {
     static sf::Texture backgroundTexture;
     if (!backgroundTexture.loadFromFile(getAssetPath("backgrounds/space_cloud.png"))) {
         std::cerr << "Failed to load background texture" << std::endl;
         throw std::runtime_error("Failed to load background texture");
     }
     backgroundSprite.setTexture(backgroundTexture);
-    deck = createDeck();
-    shuffleDeck(deck);
+    deck.createDeck(); // Ensure createDeck method exists in Deck class
+    deck.shuffle();    // Ensure shuffle method exists in Deck class
     state.canBet = true;
     state.gameStarted = false;
     state.mainGameHand.clear();
     state.drawFiveCards = false;
 }
+
+
+
 
 void handleStartGame(GameState& state, bool& roundInProgress, bool& canCollect, int& playerCredits, int& prize, sf::RenderWindow& window) {
     state.gameStarted = true;
@@ -153,6 +157,8 @@ void handleStartGame(GameState& state, bool& roundInProgress, bool& canCollect, 
     prize = 0;
     updatePrizeTexts(state.prizeTexts, state.betAmount, window.getSize().x, window.getSize().y, 0);
 }
+
+
 
 int main() {
     sf::RenderWindow window(sf::VideoMode(1280, 720), "SoftyPoker");
@@ -175,18 +181,11 @@ int main() {
     initializeUIElements(state, window);
 
     Game game;
-    initializeGame(state, window, game.backgroundSprite, game.deck);
-    game.run(state, window);
+    Deck deck;  // Create a Deck object
+    initializeGame(state, window, game.backgroundSprite, deck);  // Pass the Deck object
+    game.run(state);
     return 0;
 }
-
-
-
-
-
-
-
-
 
 
 
@@ -429,13 +428,6 @@ void initializeUIElements(GameState& state, sf::RenderWindow& window) {
 
 
 
-
-
-
-
-
-
-
 void handleResize(
     sf::RenderWindow& window,
     sf::View& view,
@@ -588,15 +580,6 @@ void updatePrizeTexts(std::vector<sf::Text>& prizeTexts, int betAmount, const sf
 
 
 
-
-
-
-
-
-
-
-
-
 void resetGameState(int& playerCredits, int& betAmount, bool& canCollect, bool& drawFiveCards, std::vector<Card>& hand, std::vector<Card>& deck, std::vector<sf::Text>& prizeTexts, const sf::Font& font, sf::RenderWindow& window, int& prize, sf::Text& betText, sf::Text& creditsText, bool& gameStarted, bool& roundInProgress, bool& gameOver, bool& gamblingPhase, SoundManager& soundManager) {
     std::cout << "[Debug] resetGameState called" << std::endl;
 
@@ -723,6 +706,8 @@ void shuffleDeck(std::vector<Card>& deck) {
 
 
 
+
+
 void dealInitialHand(std::vector<Card>& deck, std::vector<Card>& hand, sf::RenderWindow& window, sf::Sprite& backgroundSprite, sf::Text& creditsLabelText, sf::Text& betText, const std::vector<sf::Text>& prizeTexts, sf::Sound& cardDealSound) {
     hand.clear();
     float windowHeight = window.getSize().y;
@@ -736,11 +721,11 @@ void dealInitialHand(std::vector<Card>& deck, std::vector<Card>& hand, sf::Rende
         hand.back().isHeld = false;  // Reset the isHeld state
 
         float scaleFactor = (windowHeight / 600.0f) * CARD_SCALE_FACTOR;
-        hand.back().sprite.setScale(scaleFactor, scaleFactor);
+        hand.back().sprite->setScale(scaleFactor, scaleFactor);
 
-        float xPos = CARD_LEFT_OFFSET + i * (hand.back().sprite.getGlobalBounds().width + CARD_SPACING);
-        float yPos = windowHeight - CARD_BOTTOM_OFFSET - hand.back().sprite.getGlobalBounds().height;
-        hand.back().sprite.setPosition(xPos, yPos);
+        float xPos = CARD_LEFT_OFFSET + i * (hand.back().sprite->getGlobalBounds().width + CARD_SPACING);
+        float yPos = windowHeight - CARD_BOTTOM_OFFSET - hand.back().sprite->getGlobalBounds().height;
+        hand.back().sprite->setPosition(xPos, yPos);
 
         cardDealSound.play();
 
@@ -752,13 +737,16 @@ void dealInitialHand(std::vector<Card>& deck, std::vector<Card>& hand, sf::Rende
             window.draw(prizeText);
         }
         for (int j = 0; j <= i; ++j) {
-            window.draw(hand[j].sprite);
+            window.draw(*hand[j].sprite);
         }
         window.display();
 
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 }
+
+
+
 
 
 

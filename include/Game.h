@@ -5,6 +5,7 @@
 #include "GameState.h"
 #include "SoundManager.h"
 #include "Card.h"
+#include <vector>
 
 class Game {
 public:
@@ -23,4 +24,5 @@ private:
     void handleButtonInputs(const sf::Event& event, GameState& state);
     void updatePrizeTexts(GameState& state, int betAmount, int windowWidth, int windowHeight, int prize);
     void updateCardPositionsAndScales(std::vector<Card>& hand, sf::RenderWindow& window);
+    std::vector<Card> createDeck();  // Add this line
 };

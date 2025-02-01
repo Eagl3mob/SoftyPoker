@@ -44,35 +44,17 @@ void initializeGamblingGame(std::vector<Card>& deck, Card& currentCard); // Decl
 bool loadTexture(Card& card, const std::string& filePath);
 bool playGamblingRound(std::vector<Card>& deck, Card& currentCard, bool guessHigher, std::unordered_set<int>& usedCards);
 
-int main() {
-    sf::RenderWindow window(sf::VideoMode(1280, 720), "SoftyPoker");
-    GameState state;
 
-    if (!state.font.loadFromFile(getAssetPath("fonts/arialnbi.ttf"))) {
-        std::cerr << "Failed to load font" << std::endl;
-        return -1;
-    }
 
-    try {
-        SoundManager soundManager;
-        soundManager.initializeAllSounds();
-        soundManager.playRandomBackgroundMusic();
 
-        // Ensure prizeSound is loaded
-        sf::Sound& prizeSound = soundManager.prizeSound;
 
-        Game game;
-        Deck deck;  // Create a Deck object
-        initializeGame(state, window, game.getBackgroundSprite(), deck, prizeSound);  // Pass the Deck object and prizeSound
-        game.run(state);
 
-    } catch (const std::exception& e) {
-        std::cerr << "Sound initialization error: " << e.what() << std::endl;
-        return -1;
-    }
 
-    return 0;
-}
+
+
+
+
+// main.cpp
 
 void initializeUIElements(GameState& state, sf::RenderWindow& window) {
     const int characterSize = 24;
@@ -97,115 +79,6 @@ void initializeUIElements(GameState& state, sf::RenderWindow& window) {
     state.betText->setPosition(windowWidth * 0.05f, windowHeight * 0.1f);
     state.creditsText->setPosition(windowWidth * 0.2f, windowHeight * 0.1f);
 }
-
-std::vector<Card> createDeck() {
-    std::vector<Card> deck;
-    const char ranks[] = {'2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A'};
-    const char suits[] = {'H', 'D', 'C', 'S'};
-
-    for (char suit : suits) {
-        for (char rank : ranks) {
-            Card card;
-            card.suit = suit;
-            card.rank = rank;
-            std::string filePath = getAssetPath("cards/" + std::string(1, rank) + std::string(1, suit) + ".png");
-            if (loadTexture(card, filePath)) {
-                deck.push_back(std::move(card)); // Use std::move to move the card
-            }
-        }
-    }
-    return deck;
-}
-
-bool loadTexture(Card& card, const std::string& filePath) {
-    card.texture = std::make_unique<sf::Texture>();
-    if (!card.texture->loadFromFile(filePath)) {
-        card.texture.reset(); // Reset the smart pointer
-        return false;
-    }
-    card.sprite->setTexture(*card.texture);
-    return true;
-}
-
-void initializeGamblingGame(std::vector<Card>& deck, Card& currentCard) {
-    deck = createDeck();
-    Game game;
-    game.shuffleDeck(deck); // Use the shuffleDeck method from the Game class
-    currentCard = deck.back();
-    deck.pop_back();
-
-    // Set the initial position and scale for the card
-    currentCard.sprite->setPosition(200, 100); // Example position, adjust as needed
-    currentCard.sprite->setScale(0.13f, 0.13f); // Example scale, adjust as needed
-
-    // Debug statement to confirm texture loading
-    if (!currentCard.texture) {
-        std::cerr << "Failed to load current card texture" << std::endl;
-    }
-}
-
-bool playGamblingRound(std::vector<Card>& deck, Card& currentCard, bool guessHigher, std::unordered_set<int>& usedCards) {
-    if (deck.empty()) {
-        initializeGamblingGame(deck, currentCard); // Reshuffle the deck if empty
-        usedCards.clear(); // Clear used cards when deck is reshuffled
-    }
-
-    Card nextCard;
-    int attempts = 0;
-    const int maxAttempts = deck.size(); // Maximum attempts based on deck
-
-    do {
-        if (deck.empty() || attempts >= maxAttempts) {
-            initializeGamblingGame(deck, currentCard); // Reshuffle the deck
-            usedCards.clear(); // Clear used cards for reuse
-            attempts = 0;
-        }
-        nextCard = deck.back();
-        deck.pop_back();
-        attempts++;
-    } while (usedCards.find(nextCard.getRankAsInt()) != usedCards.end());
-
-    int currentRank = currentCard.getRankAsInt();
-    int nextRank = nextCard.getRankAsInt();
-
-    bool correctGuess = guessHigher ? (nextRank > currentRank) : (nextRank < currentRank);
-
-    usedCards.insert(currentCard.getRankAsInt());
-    currentCard = nextCard; // Update current card to next card
-
-    return correctGuess;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-void initializeGame(GameState& state, sf::RenderWindow& window, sf::Sprite& backgroundSprite, Deck& deck, sf::Sound& prizeSound) {
-    static sf::Texture backgroundTexture;
-    if (!backgroundTexture.loadFromFile(getAssetPath("images/fire_girl.png"))) {
-        std::cerr << "Failed to load background texture" << std::endl;
-        throw std::runtime_error("Failed to load background texture");
-    }
-    backgroundSprite.setTexture(backgroundTexture);
-    deck.createDeck(); // Ensure createDeck method exists in Deck class
-    deck.shuffle();    // Ensure shuffle method exists in Deck class
-    state.canBet = true;
-    state.gameStarted = false;
-    state.mainGameHand.clear();
-    state.drawFiveCards = false;
-}
-
-
 
 void updatePrizeTexts(std::vector<std::unique_ptr<sf::Text>>& prizeTexts, int betAmount, const sf::Font& font, float windowWidth, float windowHeight, int currentPrize, const std::map<std::string, int>& prizeMultipliers, sf::Sound& prizeSound) {
     prizeTexts.clear();
@@ -236,22 +109,6 @@ void updatePrizeTexts(std::vector<std::unique_ptr<sf::Text>>& prizeTexts, int be
         prizeTexts.push_back(std::move(prizeText));
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 int evaluateHand(const std::vector<Card>& hand, int betAmount) {
     if (hand.size() != 5) return 0;
@@ -312,6 +169,297 @@ int evaluateHand(const std::vector<Card>& hand, int betAmount) {
     return 0;
 }
 
+void updateCardPositionsAndScales(std::vector<Card>& hand, sf::RenderWindow& window) {
+    for (auto& card : hand) {
+        float scaleFactor = (window.getSize().y / 600.0f) * CARD_SCALE_FACTOR;
+        card.sprite->setScale(scaleFactor, scaleFactor); // Dereference the unique_ptr
+
+        // Ensure the card is positioned within the window's bounds
+        float xPos = std::min(CARD_LEFT_OFFSET + (&card - &hand[0]) * (card.sprite->getGlobalBounds().width + CARD_SPACING), window.getSize().x - card.sprite->getGlobalBounds().width);
+        float yPos = std::min(window.getSize().y - CARD_BOTTOM_OFFSET - card.sprite->getGlobalBounds().height, window.getSize().y - card.sprite->getGlobalBounds().height);
+
+        card.sprite->setPosition(xPos, yPos); // Dereference the unique_ptr
+    }
+}
+
+void initializeGame(GameState& state, sf::RenderWindow& window, sf::Sprite& backgroundSprite, Deck& deck, sf::Sound& prizeSound) {
+    static sf::Texture backgroundTexture;
+    if (!backgroundTexture.loadFromFile(getAssetPath("images/fire_girl.png"))) {
+        std::cerr << "Failed to load background texture" << std::endl;
+        throw std::runtime_error("Failed to load background texture");
+    }
+    backgroundSprite.setTexture(backgroundTexture);
+    deck.createDeck(); // Ensure createDeck method exists in Deck class
+    deck.shuffle();    // Ensure shuffle method exists in Deck class
+    state.canBet = true;
+    state.gameStarted = false;
+    state.mainGameHand.clear();
+    state.drawFiveCards = false;
+}
+
+void handleStartGame(GameState& state, bool& roundInProgress, bool& canCollect, int& playerCredits, int& prize, sf::RenderWindow& window, sf::Sound& prizeSound) {
+    state.gameStarted = true;
+    roundInProgress = true;
+    canCollect = false;
+    state.gameOver = false;
+    playerCredits = 10;
+    prize = 0;
+    updatePrizeTexts(state.prizeTexts, state.betAmount, state.font, window.getSize().x, window.getSize().y, 0, prizeMultipliers, prizeSound);
+}
+
+void handleBetIncrease(bool& canBet, int& betAmount, int playerCredits, std::vector<std::unique_ptr<sf::Text>>& prizeTexts, sf::RenderWindow& window, sf::Text& betText, int prize, const sf::Font& font, const std::map<std::string, int>& prizeMultipliers, sf::Sound& prizeSound) {
+    if (canBet) {
+        if (betAmount < std::min(playerCredits, 5)) {
+            betAmount++;
+        } else {
+            betAmount = 1;
+        }
+        updatePrizeTexts(prizeTexts, betAmount, font, window.getSize().x, window.getSize().y, prize, prizeMultipliers, prizeSound);
+        betText.setString("Bet: " + std::to_string(betAmount));
+    }
+}
+
+void handleDealCards(bool& canBet, bool& roundInProgress, int& playerCredits, int betAmount, std::vector<Card>& hand, std::vector<Card>& deck, sf::RenderWindow& window, sf::Text& creditsText, bool& drawFiveCards, bool& canCollect) {
+    if (canBet && playerCredits >= betAmount) {
+        playerCredits -= betAmount;
+        creditsText.setString("Credits: " + std::to_string(playerCredits)); // Use dot operator instead of arrow operator
+        hand.clear();
+        for (int i = 0; i < 5; ++i) {
+            hand.push_back(std::move(deck.back()));
+            deck.pop_back();
+        }
+        updateCardPositionsAndScales(hand, window);
+        drawFiveCards = false;
+        canCollect = true;
+        canBet = false;
+        roundInProgress = false;
+    }
+}
+
+void handleCollectPrize(bool& canCollect, int& prize, int betAmount, std::vector<Card>& hand, int& playerCredits, sf::Text& creditsText, bool& canBet, bool& gameOver, bool& gameStarted, std::vector<std::unique_ptr<sf::Text>>& prizeTexts, sf::RenderWindow& window, const sf::Font& font, const std::map<std::string, int>& prizeMultipliers, sf::Sound& prizeSound) {
+    if (canCollect) {
+        prize = evaluateHand(hand, betAmount);
+        playerCredits += prize;
+        creditsText.setString("Credits: " + std::to_string(playerCredits)); // Use dot operator instead of arrow operator
+        canCollect = false;
+        canBet = true;
+        gameOver = (playerCredits <= 0);
+        if (gameOver) {
+            gameStarted = false; // Reset gameStarted here
+        } else {
+            updatePrizeTexts(prizeTexts, betAmount, font, window.getSize().x, window.getSize().y, prize, prizeMultipliers, prizeSound); // Pass necessary parameters
+        }
+    }
+}
+
+
+
+
+void handleButtonInputs(const sf::Event& event, std::vector<Card>& hand, bool& canBet, int& betAmount, bool& canCollect, int& prize, int& playerCredits, bool& drawFiveCards, bool& roundInProgress, bool& gameOver, GameState& state, sf::RenderWindow& window, sf::Sound& prizeSound, sf::Text& betText, const sf::Font& font, const std::map<std::string, int>& prizeMultipliers, std::vector<std::unique_ptr<sf::Text>>& prizeTexts, sf::Text& creditsText, std::vector<Card>& deck) {
+    if (event.type == sf::Event::KeyPressed) {
+        switch (event.key.code) {
+            case sf::Keyboard::S:
+                if (!state.gameStarted) {
+                    handleStartGame(state, roundInProgress, canCollect, playerCredits, prize, window, prizeSound);
+                }
+                break;
+            case sf::Keyboard::B:
+                handleBetIncrease(canBet, betAmount, playerCredits, prizeTexts, window, betText, prize, font, prizeMultipliers, prizeSound);
+                break;
+            case sf::Keyboard::D:
+                if (roundInProgress) {
+                    handleDealCards(canBet, roundInProgress, playerCredits, betAmount, hand, deck, window, creditsText, drawFiveCards, canCollect);
+                }
+                break;
+            case sf::Keyboard::C:
+                handleCollectPrize(canCollect, prize, betAmount, hand, playerCredits, creditsText, canBet, gameOver, state.gameStarted, prizeTexts, window, font, prizeMultipliers, prizeSound);
+                break;
+            default:
+                break;
+        }
+    }
+}
+
+
+
+
+void updateUI(sf::RenderWindow& window, sf::Sprite& backgroundSprite, sf::Text& instructions, sf::Text& creditsLabelText, sf::Text& creditsValueText, sf::Text& betLabelText, sf::Text& betValueText, std::vector<std::unique_ptr<sf::Text>>& prizeTexts, std::vector<Card>& hand, bool gameOver, sf::Text& gameOverText, int playerCredits, int betAmount, int prize) {
+    float width = static_cast<float>(window.getSize().x);
+    float height = static_cast<float>(window.getSize().y);
+    float characterSize = 24 * (height / 600.0f); // Adjust character size dynamically
+
+    creditsLabelText.setCharacterSize(characterSize);
+    creditsLabelText.setPosition(10.f, height - 140.f);
+
+    creditsValueText.setCharacterSize(characterSize);
+    creditsValueText.setString(std::to_string(playerCredits));
+    creditsValueText.setPosition(10.f + creditsLabelText.getLocalBounds().width + 5.f, height - 140.f);
+
+    betLabelText.setCharacterSize(characterSize);
+    betLabelText.setPosition(10.f, height - 90.f);
+
+    betValueText.setCharacterSize(characterSize);
+    betValueText.setString(std::to_string(betAmount));
+    betValueText.setPosition(10.f + betLabelText.getLocalBounds().width + 5.f, height - 90.f);
+
+    instructions.setPosition((width - instructions.getLocalBounds().width) / 2.f, 10.f);
+    gameOverText.setPosition((width - gameOverText.getLocalBounds().width) / 2.f, height / 2.f);
+
+    float prizeTableHeight = 60.f;
+    for (size_t i = 0; i < prizeTexts.size(); ++i) {
+        prizeTexts[i]->setCharacterSize(22 * (height / 600.0f));
+        prizeTexts[i]->setPosition(width * 0.70f, prizeTableHeight + i * (24 * (height / 600.0f))); // Reduced gap further
+    }
+
+    float prizeValueX = width * 0.70f; // Adjusted to match prize table
+    float prizeValueY = height * 0.50f; // Adjusted to move further downwards
+
+    for (auto& prizeText : prizeTexts) {
+        if (prizeText->getString().toAnsiString().find("Prize:") != std::string::npos) {
+            prizeText->setPosition(prizeValueX, prizeValueY);
+        } else if (prizeText->getString().toAnsiString() == std::to_string(prize)) {
+            prizeText->setFillColor(sf::Color(144, 238, 144)); // Light green color for prize value
+            prizeText->setPosition(prizeValueX + prizeText->getLocalBounds().width + 20, prizeValueY + 40); // Move further to the right and downwards
+        }
+    }
+
+    window.clear();
+    window.draw(backgroundSprite);
+    window.draw(instructions);
+    window.draw(creditsLabelText);
+    window.draw(creditsValueText);
+    window.draw(betLabelText);
+    window.draw(betValueText);
+    for (const auto& prizeText : prizeTexts) {
+        window.draw(*prizeText); // Dereference unique_ptr
+    }
+    for (const auto& card : hand) {
+        window.draw(*card.sprite); // Dereference unique_ptr
+    }
+    if (gameOver) {
+        window.draw(gameOverText);
+    }
+    window.display();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+int main() {
+    sf::RenderWindow window(sf::VideoMode(1280, 720), "SoftyPoker");
+    GameState state;
+
+    if (!state.font.loadFromFile(getAssetPath("fonts/arialnbi.ttf"))) {
+        std::cerr << "Failed to load font" << std::endl;
+        return -1;
+    }
+
+    try {
+        SoundManager soundManager;
+        soundManager.initializeAllSounds();
+        soundManager.playRandomBackgroundMusic();
+
+        // Ensure prizeSound is loaded
+        sf::Sound& prizeSound = soundManager.prizeSound;
+
+        Game game;
+        Deck deck;  // Create a Deck object
+        initializeGame(state, window, game.getBackgroundSprite(), deck, prizeSound);  // Pass the Deck object and prizeSound
+        game.run(state);
+
+    } catch (const std::exception& e) {
+        std::cerr << "Sound initialization error: " << e.what() << std::endl;
+        return -1;
+    }
+
+    return 0;
+}
+
+
+
+
+void initializeGamblingGame(std::vector<Card>& deck, Card& currentCard) {
+    Game game;
+    deck = game.createDeck(); // Use the createDeck method from the Game class
+    game.shuffleDeck(deck); // Use the shuffleDeck method from the Game class
+    currentCard = deck.back();
+    deck.pop_back();
+
+    // Set the initial position and scale for the card
+    currentCard.sprite->setPosition(200, 100); // Example position, adjust as needed
+    currentCard.sprite->setScale(0.13f, 0.13f); // Example scale, adjust as needed
+
+    // Debug statement to confirm texture loading
+    if (!currentCard.texture) {
+        std::cerr << "Failed to load current card texture" << std::endl;
+    }
+}
+
+
+
+
+
+bool playGamblingRound(std::vector<Card>& deck, Card& currentCard, bool guessHigher, std::unordered_set<int>& usedCards) {
+    if (deck.empty()) {
+        initializeGamblingGame(deck, currentCard); // Reshuffle the deck if empty
+        usedCards.clear(); // Clear used cards when deck is reshuffled
+    }
+
+    Card nextCard;
+    int attempts = 0;
+    const int maxAttempts = deck.size(); // Maximum attempts based on deck
+
+    do {
+        if (deck.empty() || attempts >= maxAttempts) {
+            initializeGamblingGame(deck, currentCard); // Reshuffle the deck
+            usedCards.clear(); // Clear used cards for reuse
+            attempts = 0;
+        }
+        nextCard = deck.back();
+        deck.pop_back();
+        attempts++;
+    } while (usedCards.find(nextCard.getRankAsInt()) != usedCards.end());
+
+    int currentRank = currentCard.getRankAsInt();
+    int nextRank = nextCard.getRankAsInt();
+
+    bool correctGuess = guessHigher ? (nextRank > currentRank) : (nextRank < currentRank);
+
+    usedCards.insert(currentCard.getRankAsInt());
+    currentCard = nextCard; // Update current card to next card
+
+    return correctGuess;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -348,80 +496,6 @@ void initializeSounds(GameState& state, sf::Sound& cardDealSound, sf::Sound& hel
 
 
 
-void handleStartGame(GameState& state, bool& roundInProgress, bool& canCollect, int& playerCredits, int& prize, sf::RenderWindow& window, sf::Sound& prizeSound) {
-    state.gameStarted = true;
-    roundInProgress = true;
-    canCollect = false;
-    state.gameOver = false;
-    playerCredits = 10;
-    prize = 0;
-    updatePrizeTexts(state.prizeTexts, state.betAmount, state.font, window.getSize().x, window.getSize().y, 0, prizeMultipliers, prizeSound);
-}
-
-
-
-
-
-
-
-
-
-void handleBetIncrease(bool& canBet, int& betAmount, int playerCredits, std::vector<std::unique_ptr<sf::Text>>& prizeTexts, sf::RenderWindow& window, sf::Text& betText, int prize, const sf::Font& font, const std::map<std::string, int>& prizeMultipliers, sf::Sound& prizeSound) {
-    if (canBet) {
-        if (betAmount < std::min(playerCredits, 5)) {
-            betAmount++;
-        } else {
-            betAmount = 1;
-        }
-        updatePrizeTexts(prizeTexts, betAmount, font, window.getSize().x, window.getSize().y, prize, prizeMultipliers, prizeSound);
-        betText.setString("Bet: " + std::to_string(betAmount));
-    }
-}
-
-
-
-
-
-
-
-
-void handleDealCards(bool& canBet, bool& roundInProgress, int& playerCredits, int betAmount, std::vector<Card>& hand, std::vector<Card>& deck, sf::RenderWindow& window, sf::Text& creditsText, bool& drawFiveCards, bool& canCollect) {
-    if (canBet && playerCredits >= betAmount) {
-        playerCredits -= betAmount;
-        creditsText.setString("Credits: " + std::to_string(playerCredits)); // Use dot operator instead of arrow operator
-        hand.clear();
-        for (int i = 0; i < 5; ++i) {
-            hand.push_back(std::move(deck.back()));
-            deck.pop_back();
-        }
-        updateCardPositionsAndScales(hand, window);
-        drawFiveCards = false;
-        canCollect = true;
-        canBet = false;
-        roundInProgress = false;
-    }
-}
-
-
-
-
-
-
-void handleCollectPrize(bool& canCollect, int& prize, int betAmount, std::vector<Card>& hand, int& playerCredits, sf::Text& creditsText, bool& canBet, bool& gameOver, bool& gameStarted, std::vector<std::unique_ptr<sf::Text>>& prizeTexts, sf::RenderWindow& window, const sf::Font& font, const std::map<std::string, int>& prizeMultipliers, sf::Sound& prizeSound) {
-    if (canCollect) {
-        prize = evaluateHand(hand, betAmount);
-        playerCredits += prize;
-        creditsText.setString("Credits: " + std::to_string(playerCredits)); // Use dot operator instead of arrow operator
-        canCollect = false;
-        canBet = true;
-        gameOver = (playerCredits <= 0);
-        if (gameOver) {
-            gameStarted = false; // Reset gameStarted here
-        } else {
-            updatePrizeTexts(prizeTexts, betAmount, font, window.getSize().x, window.getSize().y, prize, prizeMultipliers, prizeSound); // Pass necessary parameters
-        }
-    }
-}
 
 
 
@@ -433,30 +507,6 @@ void handleCollectPrize(bool& canCollect, int& prize, int betAmount, std::vector
 
 
 
-void handleButtonInputs(const sf::Event& event, std::vector<Card>& hand, bool& canBet, int& betAmount, bool& canCollect, int& prize, int& playerCredits, bool& drawFiveCards, bool& roundInProgress, bool& gameOver, std::vector<Card>& deck, sf::RenderWindow& window, sf::Sprite& backgroundSprite, sf::Text& creditsText, sf::Text& betText, GameState& state, std::vector<std::unique_ptr<sf::Text>>& prizeTexts, const sf::Font& font, sf::Sound& cardDealSound, sf::Sound& heldSound, sf::Sound& unheldSound, sf::Sound& prizeSound, sf::Sound& countSound, sf::Text& instructions, sf::Text& gameOverText, bool& gamblingPhase, SoundManager& soundManager, sf::Text& creditsLabelText, sf::Text& creditsValueText, sf::Text& betLabelText, sf::Text& betValueText, const std::map<std::string, int>& prizeMultipliers) {
-    if (event.type == sf::Event::KeyPressed) {
-        switch (event.key.code) {
-            case sf::Keyboard::S:
-                if (!state.gameStarted) {
-                    handleStartGame(state, roundInProgress, canCollect, playerCredits, prize, window, prizeSound);
-                }
-                break;
-            case sf::Keyboard::B:
-                handleBetIncrease(canBet, betAmount, playerCredits, prizeTexts, window, betText, prize, font, prizeMultipliers, prizeSound);
-                break;
-            case sf::Keyboard::D:
-                if (roundInProgress) {
-                    handleDealCards(canBet, roundInProgress, playerCredits, betAmount, hand, deck, window, creditsText, drawFiveCards, canCollect);
-                }
-                break;
-            case sf::Keyboard::C:
-                handleCollectPrize(canCollect, prize, betAmount, hand, playerCredits, creditsText, canBet, gameOver, state.gameStarted, prizeTexts, window, font, prizeMultipliers, prizeSound);
-                break;
-            default:
-                break;
-        }
-    }
-}
 
 
 
@@ -466,9 +516,15 @@ void handleButtonInputs(const sf::Event& event, std::vector<Card>& hand, bool& c
 
 
 
-SoundManager::~SoundManager() {
-    stopBackgroundMusic(); // Ensure music is stopped
-}
+
+
+
+
+
+
+
+
+
 
 
 void SoundManager::initializeAllSounds() {
@@ -551,12 +607,6 @@ void SoundManager::playRandomBackgroundMusic() {
 
 
 
-void SoundManager::stopBackgroundMusic() {
-    if (currentMusic != nullptr) {
-        currentMusic->stop();
-        currentMusic = nullptr;
-    }
-}
 
 
 
@@ -579,35 +629,6 @@ void SoundManager::playSound(const std::string& soundName) {
 
 
 
-
-
-void handleResize(
-    sf::RenderWindow& window,
-    sf::View& view,
-    sf::Sprite& backgroundSprite,
-    int newWidth,
-    int newHeight,
-    SoundManager& soundManager,
-    sf::Text& betLabelText,
-    sf::Text& betValueText,
-    sf::Text& creditsLabelText,
-    sf::Text& creditsValueText,
-    std::vector<sf::Text>& prizeTexts,
-    sf::Text& prizeValueOnlyText,
-    sf::Text& instructions
-) {
-    view.setSize(newWidth, newHeight);
-    view.setCenter(newWidth / 2, newHeight / 2);
-    window.setView(view);
-
-    backgroundSprite.setScale(
-        static_cast<float>(newWidth) / backgroundSprite.getTexture()->getSize().x,
-        static_cast<float>(newHeight) / backgroundSprite.getTexture()->getSize().y
-    );
-
-    // Update UI elements positions and sizes dynamically as needed
-    // ...
-}
 
 
 
@@ -783,12 +804,6 @@ void handleBetPlacement(const sf::Event& event, bool& canBet, int& betAmount, in
 
 
 
-void shuffleDeck(std::vector<Card>& deck) {
-    std::random_device rd;
-    std::mt19937 g(rd());
-    std::shuffle(deck.begin(), deck.end(), g);
-}
-
 
 
 void dealInitialHand(std::vector<Card>& deck, std::vector<Card>& hand, sf::RenderWindow& window, sf::Sprite& backgroundSprite, sf::Text& creditsLabelText, sf::Text& betText, const std::vector<sf::Text>& prizeTexts, sf::Sound& cardDealSound, bool& canBet) {
@@ -871,6 +886,8 @@ void redrawHand(std::vector<Card>& deck, std::vector<Card>& hand, sf::RenderWind
 
 
 
+
+
 void drawHeldCardHighlight(sf::RenderWindow& window, const Card& card) {
     sf::RectangleShape highlight(sf::Vector2f(card.sprite->getGlobalBounds().width, card.sprite->getGlobalBounds().height));
     highlight.setPosition(card.sprite->getPosition());
@@ -881,22 +898,6 @@ void drawHeldCardHighlight(sf::RenderWindow& window, const Card& card) {
 }
 
 
-
-
-
-
-void updateCardPositionsAndScales(std::vector<Card>& cards, sf::RenderWindow& window) {
-    for (auto& card : cards) {
-        float scaleFactor = (window.getSize().y / 600.0f) * CARD_SCALE_FACTOR;
-        card.sprite->setScale(scaleFactor, scaleFactor); // Dereference the unique_ptr
-
-        // Ensure the card is positioned within the window's bounds
-        float xPos = std::min(CARD_LEFT_OFFSET + (&card - &cards[0]) * (card.sprite->getGlobalBounds().width + CARD_SPACING), window.getSize().x - card.sprite->getGlobalBounds().width);
-        float yPos = std::min(window.getSize().y - CARD_BOTTOM_OFFSET - card.sprite->getGlobalBounds().height, window.getSize().y - card.sprite->getGlobalBounds().height);
-
-        card.sprite->setPosition(xPos, yPos); // Dereference the unique_ptr
-    }
-}
 
 
 

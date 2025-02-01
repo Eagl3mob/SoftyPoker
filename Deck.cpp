@@ -2,19 +2,16 @@
 
 Deck::Deck() {
     createDeck();
-    shuffle();
 }
 
 void Deck::createDeck() {
     cards.clear();
     const char ranks[] = {'2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A'};
     const char suits[] = {'H', 'D', 'C', 'S'};
+
     for (char suit : suits) {
         for (char rank : ranks) {
-            Card card;
-            card.suit = suit;
-            card.rank = rank;
-            cards.push_back(card);
+            cards.push_back(Card(rank, suit));
         }
     }
 }
@@ -26,6 +23,9 @@ void Deck::shuffle() {
 }
 
 Card Deck::dealCard() {
+    if (cards.empty()) {
+        throw std::out_of_range("No cards left in the deck");
+    }
     Card card = cards.back();
     cards.pop_back();
     return card;
@@ -34,5 +34,3 @@ Card Deck::dealCard() {
 bool Deck::isEmpty() const {
     return cards.empty();
 }
-
-

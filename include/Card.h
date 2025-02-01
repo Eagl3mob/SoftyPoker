@@ -3,6 +3,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <map>
+#include <memory>
 
 class Card {
 public:
@@ -16,6 +17,24 @@ public:
     Card() : rank(' '), suit(' '), isHeld(false) {
         sprite = std::make_unique<sf::Sprite>();
         texture = std::make_unique<sf::Texture>();
+    }
+
+    // Copy constructor
+    Card(const Card& other) : rank(other.rank), suit(other.suit), isHeld(other.isHeld) {
+        sprite = std::make_unique<sf::Sprite>(*other.sprite);
+        texture = std::make_unique<sf::Texture>(*other.texture);
+    }
+
+    // Copy assignment operator
+    Card& operator=(const Card& other) {
+        if (this != &other) {
+            rank = other.rank;
+            suit = other.suit;
+            isHeld = other.isHeld;
+            sprite = std::make_unique<sf::Sprite>(*other.sprite);
+            texture = std::make_unique<sf::Texture>(*other.texture);
+        }
+        return *this;
     }
 
     // Method to get rank as an integer

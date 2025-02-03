@@ -12,16 +12,16 @@
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
-					<Add option="-std=c++17" />
 					<Add option="-g" />
+					<Add option="-std=c++17" />
 					<Add directory="../../SFML/include" />
 					<Add directory="include" />
 				</Compiler>
 				<Linker>
-					<Add library="../../SFML/lib/libsfml-graphics-d.a" />
-					<Add library="../../SFML/lib/libsfml-window-d.a" />
-					<Add library="../../SFML/lib/libsfml-system-d.a" />
-					<Add library="../../SFML/lib/libsfml-audio-d.a" />
+					<Add library="sfml-system-d" />
+					<Add library="sfml-graphics-d" />
+					<Add library="sfml-window-d" />
+					<Add library="sfml-audio-d" />
 					<Add directory="../../SFML/lib" />
 				</Linker>
 			</Target>
@@ -38,10 +38,10 @@
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
-					<Add library="../../SFML/lib/libsfml-graphics.a" />
-					<Add library="../../SFML/lib/libsfml-window.a" />
-					<Add library="../../SFML/lib/libsfml-system.a" />
-					<Add library="../../SFML/lib/libsfml-audio.a" />
+					<Add library="sfml-system" />
+					<Add library="sfml-graphics" />
+					<Add library="sfml-window" />
+					<Add library="sfml-audio" />
 					<Add directory="../../SFML/lib" />
 				</Linker>
 			</Target>
@@ -56,6 +56,20 @@
 		<Linker>
 			<Add directory="../../SFML/lib" />
 		</Linker>
+		<Unit filename="Card.cpp" />
+		<Unit filename="Deck.cpp" />
+		<Unit filename="Game.cpp" />
+		<Unit filename="GameState.cpp" />
+		<Unit filename="SoundManager.cpp" />
+		<Unit filename="Utility.cpp" />
+		<Unit filename="include/Card.h" />
+		<Unit filename="include/Deck.h" />
+		<Unit filename="include/Game.h" />
+		<Unit filename="include/GameState.h" />
+		<Unit filename="include/SoundManager.h" />
+		<Unit filename="include/Utility.h" />
+		<Unit filename="include/introState.h" />
+		<Unit filename="introState.cpp" />
 		<Unit filename="main.cpp" />
 		<Extensions>
 			<lib_finder disable_auto="1" />

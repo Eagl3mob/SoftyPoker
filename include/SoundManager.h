@@ -11,12 +11,12 @@ public:
     SoundManager();
     ~SoundManager();
 
-    void initializeAllSounds();
+    void initializeMusic();
     void playRandomBackgroundMusic();
-    void stopBackgroundMusic();
+    void initializeGameSounds();
     void playSound(const std::string& soundName);
 
-    // Make sounds public
+    // Public sounds
     sf::Sound cardDealSound;
     sf::Sound heldSound;
     sf::Sound unheldSound;
@@ -28,6 +28,7 @@ public:
 private:
     std::vector<std::unique_ptr<sf::Music>> musicTracks;
     sf::Music* currentMusic;
+    std::vector<sf::SoundBuffer> soundBuffers;
 };
 
 #endif // SOUNDMANAGER_H

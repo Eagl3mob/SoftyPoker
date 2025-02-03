@@ -1,7 +1,7 @@
 #include "GameState.h"
 
 GameState::GameState()
-    : betAmount(1), canBet(true), gameOver(false), gameStarted(false), drawFiveCards(true) {
+    : canBet(true), gameOver(false), gameStarted(false), drawFiveCards(true), betAmount(1) {
     // Initialize prize multipliers
     prizeMultipliers = {
         {"Super Royal", 336}, {"Royal Flush", 198}, {"Straight Flush", 134},

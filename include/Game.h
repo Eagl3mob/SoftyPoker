@@ -1,32 +1,20 @@
-#pragma once
+#ifndef GAME_H
+#define GAME_H
 
 #include <SFML/Graphics.hpp>
-#include <memory>
-#include "GameState.h"
-#include "SoundManager.h"
-#include "Card.h"
 #include <vector>
+#include "Card.h"
+#include "Deck.h"
+#include "SoundManager.h"
+#include "GameState.h"
 
-class Game {
-public:
-    Game();
-    void initialize(sf::RenderWindow& window, GameState& state);
-    void run(GameState& state);
-    sf::Sprite& getBackgroundSprite(); // Corrected to return a reference
+extern sf::Texture backgroundTexture;
 
-    // Make these public
-    std::vector<Card> createDeck();
-    void shuffleDeck(std::vector<Card>& deck);
+// Function declarations
+void initializeGame(GameState& state, sf::RenderWindow& window, sf::Sprite& backgroundSprite);
+void initializeUIElements(GameState& state, sf::RenderWindow& window);
+void updateUI(sf::RenderWindow& window, sf::Sprite& backgroundSprite, sf::Text& instructions, sf::Text& creditsLabelText, sf::Text& creditsValueText, sf::Text& betLabelText, sf::Text& betValueText, std::vector<std::unique_ptr<sf::Text>>& prizeTexts, std::vector<Card>& hand, bool gameOver, sf::Text& gameOverText, int playerCredits, int betAmount, int prize);
+void handleButtonInputs(const sf::Event& event, std::vector<Card>& hand, bool& canBet, int& betAmount, bool& canCollect, int& prize, int& playerCredits, bool& drawFiveCards, bool& roundInProgress, GameState& state, sf::RenderWindow& window, sf::Text& creditsText, sf::Text& betText, std::vector<std::unique_ptr<sf::Text>>& prizeTexts, sf::Sound& prizeSound, const sf::Font& font, const std::map<std::string, int>& prizeMultipliers);
+void startGame(GameState& state, Deck& deck, SoundManager& soundManager);
 
-private:
-    sf::RenderWindow* window;
-    sf::View view;
-    sf::Sprite backgroundSprite;
-    SoundManager soundManager;
-
-    void initializeUIElements(GameState& state);
-    void handleResize(int newWidth, int newHeight, GameState& state);
-    void handleButtonInputs(const sf::Event& event, GameState& state);
-    void updatePrizeTexts(GameState& state, int betAmount, int windowWidth, int windowHeight, int prize);
-    void updateCardPositionsAndScales(std::vector<Card>& hand, sf::RenderWindow& window);
-};
+#endif // GAME_H

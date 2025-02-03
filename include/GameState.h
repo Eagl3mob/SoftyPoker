@@ -1,31 +1,29 @@
-#pragma once
+#ifndef GAMESTATE_H
+#define GAMESTATE_H
 
-#include <SFML/Graphics.hpp>
-#include <SFML/Audio.hpp>
-#include <memory>
 #include <vector>
-#include <map>
 #include "Card.h"
+#include <memory>
+#include <SFML/Graphics.hpp>
+#include <map>
 
 class GameState {
 public:
-    sf::Font font;
+    GameState(); // Declare the constructor
+
+    bool canBet;
+    bool gameOver;
+    bool gameStarted;
+    bool drawFiveCards;
+    int betAmount;
+    std::vector<Card> mainGameHand;
+    std::vector<std::unique_ptr<sf::Text>> prizeTexts;
     std::unique_ptr<sf::Text> instructions;
     std::unique_ptr<sf::Text> creditsText;
     std::unique_ptr<sf::Text> betText;
     std::unique_ptr<sf::Text> gameOverText;
-    std::vector<std::unique_ptr<sf::Text>> prizeTexts;
-
-    int betAmount;
-    bool canBet;
-    bool gameOver;
-    bool gameStarted;
-    std::vector<Card> mainGameHand;
-    bool drawFiveCards;
-    sf::SoundBuffer cardDealBuffer;
-    sf::SoundBuffer heldBuffer;
-    sf::SoundBuffer unheldBuffer;
-    std::map<std::string, int> prizeMultipliers;
-
-    GameState();
+    sf::Font font;
+    std::map<std::string, int> prizeMultipliers; // Add the prize multipliers field
 };
+
+#endif // GAMESTATE_H

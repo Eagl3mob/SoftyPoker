@@ -23,7 +23,7 @@ int main() {
     initializeGame(state, window, backgroundSprite);
 
     // Call the introState function to handle the intro screen
-    introState(window, soundManager);
+    SoftyPoker::introState(window, soundManager);
 
     bool roundInProgress = false;
     bool canCollect = false;

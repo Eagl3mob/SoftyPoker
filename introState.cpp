@@ -4,6 +4,8 @@
 #include <vector>
 #include <random>
 
+namespace SoftyPoker {
+
 // Function to resize and center the background image
 void resizeBackground(sf::RenderWindow& window, sf::Sprite& backgroundSprite, const sf::Texture& backgroundTexture) {
     sf::Vector2f windowSize(static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y));
@@ -82,11 +84,8 @@ void introState(sf::RenderWindow& window, SoundManager& soundManager) {
     firstLine.setPosition(window.getSize().x, window.getSize().y / 1.2f);
 
     // Create the second line of text
-
     secondLine.setFont(font);
     secondLine.setString("Softy Projects © 2025 by T.E. & E.M. is licensed under a Creative Commons Attribution 4.0 International License (CC BY 4.0). This includes all sub-projects such as SoftyPoker.");
-
-
     secondLine.setCharacterSize(40);
     secondLine.setFillColor(sf::Color::Red);
     secondLine.setPosition(window.getSize().x, firstLine.getPosition().y + firstLine.getLocalBounds().height + 5);
@@ -164,3 +163,5 @@ void introState(sf::RenderWindow& window, SoundManager& soundManager) {
         window.display();
     }
 }
+
+} // namespace SoftyPoker

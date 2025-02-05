@@ -1,2 +1,33 @@
+# Ignore all executables in Debug and Release directories
 bin/Debug/*.exe
 bin/Release/*.exe
+
+# Code::Blocks specific files
+#*.layout
+#*.depend
+#*.layout
+#*.cbp.*
+#*~.workspace
+
+# Backup files
+*~
+
+# Ignore other common build artifacts
+*.o
+*.obj
+#*.so
+#*.a
+*.out
+*.log
+*.tmp
+*.pdb
+*.suo
+*.user
+*.ipch
+*.sdf
+#*.d
+*.VC.db
+*.VC.opendb
+
+# macOS specific
+.DS_Store

@@ -38,6 +38,7 @@ private:
     sf::Clock clock;
     sf::Clock fadeClock;
     float fadeDuration;
+    float pauseDuration;
     float firstLineSpeed;
     float secondLineSpeed;
 };

@@ -14,4 +14,3 @@ private:
 };
 
 #endif // BACKGROUND_HANDLER_H
-

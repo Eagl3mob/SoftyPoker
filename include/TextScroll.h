@@ -9,9 +9,11 @@ public:
     void update(sf::Time elapsed);
     void setCharacterSize(unsigned int size);
     void setPosition(float x, float y);
-    void setPosition(sf::Vector2f position); // Add this line
+    void setPosition(sf::Vector2f position);
+    void setTextColor(const sf::Color& color);
     sf::Vector2f getPosition() const;
     sf::FloatRect getLocalBounds() const;
+
 
 private:
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
@@ -21,4 +23,3 @@ private:
 };
 
 #endif // TEXT_SCROLL_H
-

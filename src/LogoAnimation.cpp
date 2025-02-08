@@ -29,3 +29,18 @@ void LogoAnimation::update(sf::Time elapsed) {
 void LogoAnimation::draw(sf::RenderWindow& window) {
     window.draw(sprite);
 }
+
+// Implement the new methods
+void LogoAnimation::setPosition(float x, float y) {
+    sprite.setPosition(x, y);
+}
+
+void LogoAnimation::setScale(float scaleX, float scaleY) {
+    sprite.setScale(scaleX, scaleY);
+}
+
+// Implement the setColor method
+void LogoAnimation::setColor(const sf::Color& color) {
+    sprite.setColor(color);
+}
+

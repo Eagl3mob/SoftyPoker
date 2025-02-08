@@ -7,6 +7,12 @@ TextScroll::TextScroll(const sf::Font& font, const std::string& textStr, float s
     text.setPosition(0, startY);
 }
 
+// TextScroll.cpp
+void TextScroll::setTextColor(const sf::Color& color) {
+    text.setFillColor(color);
+}
+
+
 void TextScroll::update(sf::Time elapsed) {
     text.move(-speed * elapsed.asSeconds(), 0);
     if (text.getPosition().x + text.getGlobalBounds().width < 0) {

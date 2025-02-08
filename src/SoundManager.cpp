@@ -12,7 +12,6 @@ SoundManager::~SoundManager() {
     // Cleanup here
 }
 
-
 void SoundManager::initializeMusic() {
     std::cout << "[Debug] Initializing music" << std::endl;
     auto music1 = std::make_unique<sf::Music>();
@@ -54,8 +53,6 @@ void SoundManager::initializeMusic() {
     std::cout << "[Debug] Finished initializing music" << std::endl;
 }
 
-
-
 void SoundManager::playRandomBackgroundMusic() {
     std::cout << "[Debug] Attempting to play random background music" << std::endl;
     if (!musicTracks.empty()) {
@@ -80,54 +77,5 @@ void SoundManager::playRandomBackgroundMusic() {
         }
     } else {
         std::cerr << "[Error] No music tracks available" << std::endl;
-    }
-}
-
-
-
-
-
-
-
-void SoundManager::initializeGameSounds() {
-    std::vector<std::pair<std::string, sf::Sound&>> soundFiles = {
-        {getAssetPath("sounds/deal.wav"), cardDealSound},
-        {getAssetPath("sounds/hold.wav"), heldSound},
-        {getAssetPath("sounds/unheld.wav"), unheldSound},
-        {getAssetPath("sounds/prize.wav"), prizeSound},
-        {getAssetPath("sounds/count.wav"), countSound},
-        {getAssetPath("sounds/lose.wav"), loseSound},
-        {getAssetPath("sounds/win.wav"), winSound}
-    };
-
-    soundBuffers.resize(soundFiles.size());
-    for (size_t i = 0; i < soundFiles.size(); ++i) {
-        if (!soundBuffers[i].loadFromFile(soundFiles[i].first)) {
-            std::cerr << "Failed to load sound: " << soundFiles[i].first << std::endl;
-            throw std::runtime_error("Failed to initialize sound.");
-        }
-        soundFiles[i].second.setBuffer(soundBuffers[i]);
-        soundFiles[i].second.setVolume(100.0f); // Set volume for each sound
-        std::cout << "[Debug] Sound initialized: " << soundFiles[i].first << std::endl;
-    }
-}
-
-void SoundManager::playSound(const std::string& soundName) {
-    if (soundName == "deal") {
-        cardDealSound.play();
-    } else if (soundName == "hold") {
-        heldSound.play();
-    } else if (soundName == "unhold") {
-        unheldSound.play();
-    } else if (soundName == "prize") {
-        prizeSound.play();
-    } else if (soundName == "count") {
-        countSound.play();
-    } else if (soundName == "lose") {
-        loseSound.play();
-    } else if (soundName == "win") {
-        winSound.play();
-    } else {
-        std::cerr << "[Error] Unknown sound name: " << soundName << std::endl;
     }
 }

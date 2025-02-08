@@ -56,21 +56,17 @@
 		<Linker>
 			<Add directory="../../SFML/lib" />
 		</Linker>
-		<Unit filename="Card.cpp" />
-		<Unit filename="Deck.cpp" />
-		<Unit filename="Game.cpp" />
-		<Unit filename="GameState.cpp" />
-		<Unit filename="SoundManager.cpp" />
-		<Unit filename="Utility.cpp" />
-		<Unit filename="include/Card.h" />
-		<Unit filename="include/Deck.h" />
-		<Unit filename="include/Game.h" />
+		<Unit filename="include/ControlManager.h" />
 		<Unit filename="include/GameState.h" />
+		<Unit filename="include/IntroState.h" />
 		<Unit filename="include/SoundManager.h" />
+		<Unit filename="include/StateManager.h" />
 		<Unit filename="include/Utility.h" />
-		<Unit filename="include/introState.h" />
-		<Unit filename="introState.cpp" />
-		<Unit filename="main.cpp" />
+		<Unit filename="src/ControlManager.cpp" />
+		<Unit filename="src/IntroState.cpp" />
+		<Unit filename="src/SoundManager.cpp" />
+		<Unit filename="src/Utility.cpp" />
+		<Unit filename="src/main.cpp" />
 		<Extensions>
 			<lib_finder disable_auto="1" />
 		</Extensions>

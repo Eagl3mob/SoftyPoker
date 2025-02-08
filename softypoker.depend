@@ -525,12 +525,12 @@
 	<SFML/Audio/Export.hpp>
 	<string>
 
-1738424369 d:\projects\softypoker\include\game.h
+1738913738 d:\projects\softypoker\include\game.h
 	<SFML/Graphics.hpp>
 	<vector>
 	"Card.h"
 	"Deck.h"
-	"SoundManager.h"
+	"SoundPlayer.h"
 	"GameState.h"
 
 1738411591 d:\projects\softypoker\include\gamestate.h
@@ -596,8 +596,53 @@
 	<vector>
 	<random>
 
-1738658945 d:\projects\softypoker\include\introstate.h
+1738914328 d:\projects\softypoker\include\introstate.h
 	<SFML/Graphics.hpp>
 	<SFML/Audio.hpp>
-	"SoundManager.h"
+	"SoundPlayer.h"
+
+1738918520 source:d:\projects\softypoker\src\game.cpp
+	"Game.h"
+	"GameState.h"
+	"Utility.h"
+	<SFML/Graphics.hpp>
+	<iostream>
+	<random>
+	<vector>
+
+1738915591 d:\projects\softypoker\include\soundplayer.h
+	<SFML/Audio.hpp>
+	<string>
+	<vector>
+	<memory>
+
+1738411591 source:d:\projects\softypoker\src\gamestate.cpp
+	"GameState.h"
+
+1738922974 source:d:\projects\softypoker\src\introstate.cpp
+	"introState.h"
+	"Utility.h"
+	<iostream>
+	<vector>
+	<random>
+
+1738922974 source:d:\projects\softypoker\src\main.cpp
+	<SFML/Graphics.hpp>
+	<SFML/Audio.hpp>
+	<iostream>
+	<random>
+	"introState.h"
+	"SoundPlayer.h"
+
+1738914783 source:d:\projects\softypoker\src\soundplayer.cpp
+	"SoundPlayer.h"
+	"Utility.h"
+	<SFML/Audio.hpp>
+	<iostream>
+	<random>
+
+1738918667 source:d:\projects\softypoker\src\utility.cpp
+	"Utility.h"
+	<iostream>
+	<filesystem>
 

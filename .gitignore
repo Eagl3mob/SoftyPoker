@@ -1,7 +1,8 @@
 # Ignore all executables in Debug and Release directories
 bin/Debug/*.exe
 bin/Release/*.exe
-
+# Ignore obj directory
+obj/
 # Code::Blocks specific files
 #*.layout
 #*.depend

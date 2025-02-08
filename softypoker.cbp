@@ -56,15 +56,21 @@
 		<Linker>
 			<Add directory="../../SFML/lib" />
 		</Linker>
+		<Unit filename="include/BackgroundHandler.h" />
 		<Unit filename="include/ControlManager.h" />
 		<Unit filename="include/GameState.h" />
 		<Unit filename="include/IntroState.h" />
+		<Unit filename="include/LogoAnimation.h" />
 		<Unit filename="include/SoundManager.h" />
 		<Unit filename="include/StateManager.h" />
+		<Unit filename="include/TextScroll.h" />
 		<Unit filename="include/Utility.h" />
+		<Unit filename="src/BackgroundHandler.cpp" />
 		<Unit filename="src/ControlManager.cpp" />
 		<Unit filename="src/IntroState.cpp" />
+		<Unit filename="src/LogoAnimation.cpp" />
 		<Unit filename="src/SoundManager.cpp" />
+		<Unit filename="src/TextScroll.cpp" />
 		<Unit filename="src/Utility.cpp" />
 		<Unit filename="src/main.cpp" />
 		<Extensions>

@@ -6,7 +6,13 @@
 
 namespace SoftyPoker {
 
-IntroState::IntroState(SoundManager& sp, sf::RenderWindow& window) : soundPlayer(sp) {
+IntroState::IntroState(SoundManager& sp, sf::RenderWindow& window)
+    : soundPlayer(sp),
+      firstLine(TextScroll(font, "Hello and welcome to SoftyPoker project intro. Starting in 2025 with the help from AI, using SFML2, Code::Blocks and many other open-source great goodies. SoftyPoker's expected finish date is when it is done. The objective is to make a kind of card game where the player plays against the odds, similar to a video poker clone. The player will have 5 cards dealt on the draw, then choose which cards to hold or not. The held cards will be replaced. Based on the redraw, the hand will be evaluated, and from there, there will be a prize table where, according to what the player has on hand, they will know if there is a prize or not. The player has the choice, if there is a prize, to double the prize or lose it by guessing if a card is lower or higher. And so on... more to be implemented as the code continues to develop. More T.B.A...", 300.0f, window.getSize().y / 1.2f)),
+      secondLine(TextScroll(font, "Softy Projects © 2025 by T.E. & E.M. is licensed under a Creative Commons Attribution 4.0 International License (CC BY 4.0). This includes all sub-projects such as SoftyPoker.", 150.0f, window.getSize().y / 1.2f + 50)),
+      logoAnimation(logoTexture, 12.0f),
+      backgroundHandler(backgroundTexture) {
+
     backgroundFiles = {
         getAssetPath("images/backgrounds/blond_girl.png"),
         getAssetPath("images/backgrounds/claws_girl.png"),
@@ -16,10 +22,6 @@ IntroState::IntroState(SoundManager& sp, sf::RenderWindow& window) : soundPlayer
         getAssetPath("images/backgrounds/sofa_girl.png")
     };
 
-    initialize(window);
-}
-
-void IntroState::initialize(sf::RenderWindow& window) {
     std::random_device rd;
     std::mt19937 g(rd());
     std::uniform_int_distribution<> dis(0, backgroundFiles.size() - 1);
@@ -30,6 +32,8 @@ void IntroState::initialize(sf::RenderWindow& window) {
 
     if (!backgroundTexture.loadFromFile(selectedFile)) {
         throw std::runtime_error("Failed to load background texture: " + selectedFile);
+    } else {
+        std::cout << "[Debug] Successfully loaded background texture: " << selectedFile << std::endl;
     }
     backgroundSprite.setTexture(backgroundTexture);
 
@@ -43,22 +47,8 @@ void IntroState::initialize(sf::RenderWindow& window) {
         throw std::runtime_error("Failed to load font");
     }
 
-    firstLine.setFont(font);
-    firstLine.setString("Hello and welcome to SoftyPoker project intro. Starting in 2025 with the help from AI, using SFML2, Code::Blocks and many other open-source great goodies. SoftyPoker's expected finish date is when it is done. The objective is to make a kind of card game where the player plays against the odds, similar to a video poker clone. The player will have 5 cards dealt on the draw, then choose which cards to hold or not. The held cards will be replaced. Based on the redraw, the hand will be evaluated, and from there, there will be a prize table where, according to what the player has on hand, they will know if there is a prize or not. The player has the choice, if there is a prize, to double the prize or lose it by guessing if a card is lower or higher. And so on... more to be implemented as the code continues to develop. More T.B.A...");
-    firstLine.setCharacterSize(32);
-    firstLine.setFillColor(sf::Color::Green);
-
-    secondLine.setFont(font);
-    secondLine.setString("Softy Projects © 2025 by T.E. & E.M. is licensed under a Creative Commons Attribution 4.0 International License (CC BY 4.0). This includes all sub-projects such as SoftyPoker.");
-    secondLine.setCharacterSize(40);
-    secondLine.setFillColor(sf::Color::Red);
-
     soundPlayer.initializeMusic();
     soundPlayer.playRandomBackgroundMusic();
-
-    fadeDuration = 12.0f;
-    firstLineSpeed = 300.0f;
-    secondLineSpeed = 150.0f;
 
     resizeElements(window);
 }
@@ -86,8 +76,9 @@ void IntroState::resizeElements(sf::RenderWindow& window) {
 
 void IntroState::update(sf::RenderWindow& window) {
     sf::Time elapsed = clock.restart();
-    animateLogo();
-    scrollText(window, elapsed);
+    logoAnimation.update(elapsed);
+    firstLine.update(elapsed);
+    secondLine.update(elapsed);
 }
 
 void IntroState::draw(sf::RenderWindow& window) {
@@ -124,6 +115,8 @@ void IntroState::animateLogo() {
     }
 }
 
+// ... existing content ...
+
 void IntroState::scrollText(sf::RenderWindow& window, sf::Time elapsed) {
     sf::Vector2f firstLinePos = firstLine.getPosition();
     firstLinePos.x -= firstLineSpeed * elapsed.asSeconds();
@@ -140,7 +133,5 @@ void IntroState::scrollText(sf::RenderWindow& window, sf::Time elapsed) {
     secondLine.setPosition(secondLinePos);
 }
 
-} // namespace SoftyPoker
-
-
+} // namespace SoftyPoker  // Ensure this closing brace is present
 

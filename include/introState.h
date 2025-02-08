@@ -5,7 +5,9 @@
 #include <SFML/Audio.hpp>
 #include "SoundManager.h"
 #include "GameState.h"
-#include "Utility.h"
+#include "TextScroll.h"
+#include "LogoAnimation.h"
+#include "BackgroundHandler.h"
 
 namespace SoftyPoker {
 
@@ -18,27 +20,29 @@ public:
     void resizeElements(sf::RenderWindow& window);
 
 private:
-    void initialize(sf::RenderWindow& window);
-    void animateLogo();
-    void scrollText(sf::RenderWindow& window, sf::Time elapsed);
+    void animateLogo();  // Ensure this line is present
+    void scrollText(sf::RenderWindow& window, sf::Time elapsed);  // Add this line to declare scrollText
 
     SoundManager& soundPlayer;
-    sf::Clock clock;
+    sf::Font font;
     sf::Texture logoTexture;
-    sf::Sprite logoSprite;
     sf::Texture backgroundTexture;
     sf::Sprite backgroundSprite;
-    sf::Font font;
-    sf::Text firstLine;
-    sf::Text secondLine;
     std::vector<std::string> backgroundFiles;
+    TextScroll firstLine;
+    TextScroll secondLine;
+    LogoAnimation logoAnimation;
+    BackgroundHandler backgroundHandler;
+    sf::Sprite logoSprite;
+    float horizontalOffset;
+    sf::Clock clock;
+    sf::Clock fadeClock;
     float fadeDuration;
     float firstLineSpeed;
     float secondLineSpeed;
-    sf::Clock fadeClock;
-    float horizontalOffset;
 };
 
 } // namespace SoftyPoker
 
 #endif // INTRO_STATE_H
+

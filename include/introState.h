@@ -39,8 +39,8 @@ private:
     sf::Clock fadeClock;
     float fadeDuration;
     float pauseDuration;
-    float firstLineSpeed;
-    float secondLineSpeed;
+    float firstLineSpeed = 100.0f;
+    float secondLineSpeed = 200.0f;
 };
 
 } // namespace SoftyPoker

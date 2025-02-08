@@ -593,7 +593,7 @@
 	<vector>
 	<random>
 
-1739017624 d:\projects\softypoker\include\introstate.h
+1739030950 d:\projects\softypoker\include\introstate.h
 	<SFML/Graphics.hpp>
 	<SFML/Audio.hpp>
 	"SoundManager.h"
@@ -620,14 +620,14 @@
 1738411591 source:d:\projects\softypoker\src\gamestate.cpp
 	"GameState.h"
 
-1739017825 source:d:\projects\softypoker\src\introstate.cpp
+1739030950 source:d:\projects\softypoker\src\introstate.cpp
 	"IntroState.h"
 	"Utility.h"
 	<iostream>
 	<vector>
 	<random>
 
-1739009629 source:d:\projects\softypoker\src\main.cpp
+1739025595 source:d:\projects\softypoker\src\main.cpp
 	"StateManager.h"
 	"ControlManager.h"
 	"SoundManager.h"
@@ -648,7 +648,7 @@
 1739016807 source:d:\projects\softypoker\src\backgroundhandler.cpp
 	"BackgroundHandler.h"
 
-1739016807 d:\projects\softypoker\include\backgroundhandler.h
+1739026321 d:\projects\softypoker\include\backgroundhandler.h
 	<SFML/Graphics.hpp>
 
 1739012841 source:d:\projects\softypoker\src\controlmanager.cpp
@@ -665,13 +665,13 @@
 	<memory>
 	<SFML/Graphics.hpp>
 
-1739017768 d:\projects\softypoker\include\textscroll.h
+1739030235 d:\projects\softypoker\include\textscroll.h
 	<SFML/Graphics.hpp>
 
-1739016807 d:\projects\softypoker\include\logoanimation.h
+1739027510 d:\projects\softypoker\include\logoanimation.h
 	<SFML/Graphics.hpp>
 
-1739016807 source:d:\projects\softypoker\src\logoanimation.cpp
+1739027510 source:d:\projects\softypoker\src\logoanimation.cpp
 	"LogoAnimation.h"
 
 1739005998 source:d:\projects\softypoker\src\soundmanager.cpp
@@ -681,6 +681,6 @@
 	<iostream>
 	<random>
 
-1739017768 source:d:\projects\softypoker\src\textscroll.cpp
+1739030235 source:d:\projects\softypoker\src\textscroll.cpp
 	"TextScroll.h"
 

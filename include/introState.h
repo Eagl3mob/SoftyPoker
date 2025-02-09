@@ -2,48 +2,48 @@
 #define INTRO_STATE_H
 
 #include <SFML/Graphics.hpp>
-#include <SFML/Audio.hpp>
-#include "SoundManager.h"
 #include "GameState.h"
+#include "SoundManager.h"
 #include "TextScroll.h"
 #include "LogoAnimation.h"
 #include "BackgroundHandler.h"
 
 namespace SoftyPoker {
 
-class IntroState : public GameState {
+class IntroState : public GameState { // Ensure IntroState inherits from GameState
 public:
     IntroState(SoundManager& sp, sf::RenderWindow& window);
+
+    void resizeElements(sf::RenderWindow& window);
     void update(sf::RenderWindow& window) override;
     void draw(sf::RenderWindow& window) override;
     void handleEvent(sf::Event& event, sf::RenderWindow& window) override;
-    void resizeElements(sf::RenderWindow& window);
 
 private:
-    void animateLogo();  // Ensure this line is present
-    void scrollText(sf::RenderWindow& window, sf::Time elapsed);  // Add this line to declare scrollText
+    void animateLogo();
+    void scrollText(sf::RenderWindow& window, sf::Time elapsed);
 
     SoundManager& soundPlayer;
-    sf::Font font;
-    sf::Texture logoTexture;
-    sf::Texture backgroundTexture;
-    sf::Sprite backgroundSprite;
-    std::vector<std::string> backgroundFiles;
+    sf::Font font; // Declare font variable
     TextScroll firstLine;
     TextScroll secondLine;
     LogoAnimation logoAnimation;
-    BackgroundHandler backgroundHandler;
     sf::Sprite logoSprite;
-    float horizontalOffset;
+    sf::Texture logoTexture;
+    sf::Sprite backgroundSprite;
+    sf::Texture backgroundTexture;
+    BackgroundHandler backgroundHandler;
+    std::vector<std::string> backgroundFiles;
     sf::Clock clock;
     sf::Clock fadeClock;
     float fadeDuration;
     float pauseDuration;
-    float firstLineSpeed = 100.0f;
-    float secondLineSpeed = 200.0f;
+    sf::Time totalElapsed;
+    const float firstLineSpeed = 100.0f;
+    const float secondLineSpeed = 100.0f;
+    const float horizontalOffset = 10.0f;
 };
 
 } // namespace SoftyPoker
 
 #endif // INTRO_STATE_H
-

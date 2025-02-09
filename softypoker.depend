@@ -620,7 +620,7 @@
 1738411591 source:d:\projects\softypoker\src\gamestate.cpp
 	"GameState.h"
 
-1739092205 source:d:\projects\softypoker\src\introstate.cpp
+1739125672 source:d:\projects\softypoker\src\introstate.cpp
 	"IntroState.h"
 	"Utility.h"
 	<iostream>
@@ -665,7 +665,7 @@
 	<memory>
 	<SFML/Graphics.hpp>
 
-1739092205 d:\projects\softypoker\include\textscroll.h
+1739094800 d:\projects\softypoker\include\textscroll.h
 	<SFML/Graphics.hpp>
 
 1739092205 d:\projects\softypoker\include\logoanimation.h
@@ -674,13 +674,13 @@
 1739092205 source:d:\projects\softypoker\src\logoanimation.cpp
 	"LogoAnimation.h"
 
-1739092205 source:d:\projects\softypoker\src\soundmanager.cpp
+1739114018 source:d:\projects\softypoker\src\soundmanager.cpp
 	"SoundManager.h"
 	"Utility.h"
 	<SFML/Audio.hpp>
 	<iostream>
 	<random>
 
-1739092205 source:d:\projects\softypoker\src\textscroll.cpp
+1739094800 source:d:\projects\softypoker\src\textscroll.cpp
 	"TextScroll.h"
 

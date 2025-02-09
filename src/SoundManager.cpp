@@ -43,7 +43,7 @@ void SoundManager::initializeMusic() {
         if (!music5->openFromFile(getAssetPath("music/music5.ogg"))) {
             throw std::runtime_error("Failed to load music 5");
         }
-        if (!music6->openFromFile(getAssetPath("music/music6.ogg"))) { // Load new music track
+        if (!music6->openFromFile(getAssetPath("music/music6.ogg"))) {
             throw std::runtime_error("Failed to load music 6");
         }
 
@@ -52,7 +52,7 @@ void SoundManager::initializeMusic() {
         musicTracks.push_back(std::move(music3));
         musicTracks.push_back(std::move(music4));
         musicTracks.push_back(std::move(music5));
-        musicTracks.push_back(std::move(music6)); // Add new music track
+        musicTracks.push_back(std::move(music6));
 
         for (const auto& music : musicTracks) {
             music->setVolume(100.0f); // Set volume for each music track

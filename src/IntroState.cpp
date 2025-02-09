@@ -8,12 +8,15 @@ namespace SoftyPoker {
 
 IntroState::IntroState(SoundManager& sp, sf::RenderWindow& window)
     : soundPlayer(sp),
-      firstLine(TextScroll(font, "Hello and welcome to SoftyPoker project intro. Starting in 2025 with the help from AI, using SFML2, Code::Blocks and many other open-source great goodies. SoftyPoker's experience is inspired by various card games and new technology.", 200.0f, 50.0f, window.getSize().x)), // Updated to include window width
-      secondLine(TextScroll(font, "Softy Projects © 2025 by T.E. & E.M. is licensed under a Creative Commons Attribution 4.0 International License (CC BY 4.0). This includes all sub-projects such as SoftyPoker.", 400.0f, 100.0f, window.getSize().x)), // Updated to include window width
+      font(),
+      firstLine(TextScroll(font, "Hello and welcome to SoftyPoker project intro. Starting in 2025 with the help from AI, using SFML2, Code::Blocks and many other open-source great goodies. SoftyPoker's experience is inspired by various card games and new technology.", 200.0f, 50.0f, window.getSize().x)),
+      secondLine(TextScroll(font, "Softy Projects © 2025 by T.E. & E.M. is licensed under a Creative Commons Attribution 4.0 International License (CC BY 4.0). This includes all sub-projects such as SoftyPoker.", 400.0f, 100.0f, window.getSize().x)),
       logoAnimation(logoTexture, 12.0f),
       backgroundHandler(backgroundTexture),
       fadeDuration(6.0f),
-      pauseDuration(2.0f) {  // Added pause duration
+      pauseDuration(2.0f),
+      totalElapsed(sf::Time::Zero) {
+      firstLine.setTextColor(sf::Color(144, 238, 144));
 
     backgroundFiles = {
         getAssetPath("images/backgrounds/blond_girl.png"),
@@ -22,7 +25,7 @@ IntroState::IntroState(SoundManager& sp, sf::RenderWindow& window)
         getAssetPath("images/backgrounds/fire_girl.png"),
         getAssetPath("images/backgrounds/skul_girl.png"),
         getAssetPath("images/backgrounds/sofa_girl.png"),
-        getAssetPath("images/backgrounds/bikini_girl.png") // New background added
+        getAssetPath("images/backgrounds/bikini_girl.png")
     };
 
     std::random_device rd;
@@ -46,7 +49,6 @@ IntroState::IntroState(SoundManager& sp, sf::RenderWindow& window)
         std::cout << "[Debug] Successfully loaded logo texture" << std::endl;
     }
     logoSprite.setTexture(logoTexture);
-    // Make the logo a little smaller
     logoSprite.setScale(0.2f, 0.2f);
 
     if (!font.loadFromFile(getAssetPath("fonts/arialnbi.ttf"))) {
@@ -56,9 +58,8 @@ IntroState::IntroState(SoundManager& sp, sf::RenderWindow& window)
     soundPlayer.initializeMusic();
     soundPlayer.playRandomBackgroundMusic();
 
-    // Set the text color for the first and second lines
-    firstLine.setTextColor(sf::Color(144, 238, 144)); // Light green
-    secondLine.setTextColor(sf::Color(255, 182, 193)); // Light red
+    secondLine.enableSmoothColorTransition(true);
+    secondLine.setColorFadeSpeed(0.1f);
 
     resizeElements(window);
 }
@@ -83,26 +84,26 @@ void IntroState::resizeElements(sf::RenderWindow& window) {
     firstLine.setPosition(windowWidth, windowHeight / 1.2f);
 
     secondLine.setCharacterSize(static_cast<unsigned int>(40 * (windowWidth / 1280.f)));
-    secondLine.setPosition(firstLine.getPosition().x + horizontalOffset, firstLine.getPosition().y + firstLine.getLocalBounds().height + 5);
+    secondLine.setPosition(firstLine.getPosition().x + 10.0f, firstLine.getPosition().y + firstLine.getLocalBounds().height + 5);
 
-    // Update window width for text scrolling
     firstLine.setWindowWidth(windowWidth);
     secondLine.setWindowWidth(windowWidth);
 }
 
 void IntroState::update(sf::RenderWindow& window) {
     sf::Time elapsed = clock.restart();
+    totalElapsed += elapsed;
     logoAnimation.update(elapsed);
-    firstLine.update(elapsed);
-    secondLine.update(elapsed);
-    animateLogo();  // Ensure animateLogo is called
+    firstLine.update(elapsed, totalElapsed);
+    secondLine.update(elapsed, totalElapsed); // Call with two parameters
+    animateLogo();
 }
 
 void IntroState::draw(sf::RenderWindow& window) {
     window.clear();
     window.draw(backgroundSprite);
     window.draw(firstLine);
-    window.draw(logoSprite); // Ensure the logo sprite is drawn here
+    window.draw(logoSprite);
     window.draw(secondLine);
     window.display();
 }
@@ -127,13 +128,13 @@ void IntroState::animateLogo() {
     if (cycleProgress < fadeDuration / totalDuration) {
         float fadeProgress = cycleProgress / (fadeDuration / totalDuration);
         sf::Uint8 alpha = static_cast<sf::Uint8>(255 * fadeProgress);
-        logoSprite.setColor(sf::Color(255, 255, 255, alpha)); // Fade in
+        logoSprite.setColor(sf::Color(255, 255, 255, alpha));
     } else if (cycleProgress < (fadeDuration + pauseDuration) / totalDuration) {
-        logoSprite.setColor(sf::Color(255, 255, 255, 255)); // Pause
+        logoSprite.setColor(sf::Color(255, 255, 255, 255));
     } else {
         float fadeProgress = (cycleProgress - (fadeDuration + pauseDuration) / totalDuration) / (fadeDuration / totalDuration);
         sf::Uint8 alpha = static_cast<sf::Uint8>(255 * (1.0f - fadeProgress));
-        logoSprite.setColor(sf::Color(255, 255, 255, alpha)); // Fade out
+        logoSprite.setColor(sf::Color(255, 255, 255, alpha));
     }
 }
 
@@ -148,7 +149,7 @@ void IntroState::scrollText(sf::RenderWindow& window, sf::Time elapsed) {
     sf::Vector2f secondLinePos = secondLine.getPosition();
     secondLinePos.x -= secondLineSpeed * elapsed.asSeconds();
     if (secondLinePos.x + secondLine.getLocalBounds().width < 0) {
-        secondLinePos.x = window.getSize().x + horizontalOffset;
+        secondLinePos.x = window.getSize().x + 10.0f;
     }
     secondLine.setPosition(secondLinePos);
 }

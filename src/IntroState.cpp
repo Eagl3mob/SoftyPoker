@@ -8,12 +8,12 @@ namespace SoftyPoker {
 
 IntroState::IntroState(SoundManager& sp, sf::RenderWindow& window)
     : soundPlayer(sp),
-      firstLine(TextScroll(font, "Welcome to SoftyPoker! Launched in 2025 with AI, using SFML2, Code::Blocks, and other open-source tools. SoftyPoker is inspired by various card games and new technology.", 200.0f, 50.0f, window.getSize().x)),
-      secondLine(TextScroll(font, "Softy Projects © 2025 by T.E. & E.M. is licensed under CC BY 4.0, including sub-projects like SoftyPoker.", 400.0f, 100.0f, window.getSize().x)),
+      firstLine(TextScroll(font, "Hello and welcome to SoftyPoker project intro. Starting in 2025 with the help from AI, using SFML2, Code::Blocks and many other open-source great goodies. SoftyPoker's experience is inspired by various card games and new technology.", 200.0f, 50.0f, window.getSize().x)), // Updated to include window width
+      secondLine(TextScroll(font, "Softy Projects © 2025 by T.E. & E.M. is licensed under a Creative Commons Attribution 4.0 International License (CC BY 4.0). This includes all sub-projects such as SoftyPoker.", 400.0f, 100.0f, window.getSize().x)), // Updated to include window width
       logoAnimation(logoTexture, 12.0f),
       backgroundHandler(backgroundTexture),
       fadeDuration(6.0f),
-      pauseDuration(2.0f) { // Added pause duration
+      pauseDuration(2.0f) {  // Added pause duration
 
     backgroundFiles = {
         getAssetPath("images/backgrounds/blond_girl.png"),
@@ -21,7 +21,8 @@ IntroState::IntroState(SoundManager& sp, sf::RenderWindow& window)
         getAssetPath("images/backgrounds/fantasy_girl.png"),
         getAssetPath("images/backgrounds/fire_girl.png"),
         getAssetPath("images/backgrounds/skul_girl.png"),
-        getAssetPath("images/backgrounds/sofa_girl.png")
+        getAssetPath("images/backgrounds/sofa_girl.png"),
+        getAssetPath("images/backgrounds/bikini_girl.png") // New background added
     };
 
     std::random_device rd;

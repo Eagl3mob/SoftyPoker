@@ -8,8 +8,8 @@ namespace SoftyPoker {
 
 IntroState::IntroState(SoundManager& sp, sf::RenderWindow& window)
     : soundPlayer(sp),
-      firstLine(TextScroll(font, "Hello and welcome to SoftyPoker project intro. Starting in 2025 with the help from AI, using SFML2, Code::Blocks and many other open-source great goodies. SoftyPoker's experience is inspired by various card games and new technology.", 200.0f, 50.0f)),
-      secondLine(TextScroll(font, "Softy Projects © 2025 by T.E. & E.M. is licensed under a Creative Commons Attribution 4.0 International License (CC BY 4.0). This includes all sub-projects such as SoftyPoker.", 400.0f, 100.0f)), // Increase speed here
+      firstLine(TextScroll(font, "Hello and welcome to SoftyPoker project intro. Starting in 2025 with the help from AI, using SFML2, Code::Blocks and many other open-source great goodies. SoftyPoker's experience is inspired by various card games and new technology.", 200.0f, 50.0f, window.getSize().x)), // Updated to include window width
+      secondLine(TextScroll(font, "Softy Projects © 2025 by T.E. & E.M. is licensed under a Creative Commons Attribution 4.0 International License (CC BY 4.0). This includes all sub-projects such as SoftyPoker.", 400.0f, 100.0f, window.getSize().x)), // Updated to include window width
       logoAnimation(logoTexture, 12.0f),
       backgroundHandler(backgroundTexture),
       fadeDuration(6.0f),
@@ -76,19 +76,17 @@ void IntroState::resizeElements(sf::RenderWindow& window) {
         logoWidth = logoHeight * logoAspectRatio;
     }
     logoSprite.setScale(logoWidth / logoTexture.getSize().x, logoHeight / logoTexture.getSize().y);
-    // Position the logo at the bottom-left
     logoSprite.setPosition(10.0f, windowHeight - logoHeight - 10.0f);
 
-    std::cout << "[Debug] Logo position: (" << logoSprite.getPosition().x << ", " << logoSprite.getPosition().y << ")" << std::endl;
-    std::cout << "[Debug] Logo scale: (" << logoSprite.getScale().x << ", " << logoSprite.getScale().y << ")" << std::endl;
-
-    // Adjust character size and position for the first line of text
     firstLine.setCharacterSize(static_cast<unsigned int>(32 * (windowWidth / 1280.f)));
     firstLine.setPosition(windowWidth, windowHeight / 1.2f);
 
-    // Adjust character size and position for the second line of text
     secondLine.setCharacterSize(static_cast<unsigned int>(40 * (windowWidth / 1280.f)));
     secondLine.setPosition(firstLine.getPosition().x + horizontalOffset, firstLine.getPosition().y + firstLine.getLocalBounds().height + 5);
+
+    // Update window width for text scrolling
+    firstLine.setWindowWidth(windowWidth);
+    secondLine.setWindowWidth(windowWidth);
 }
 
 void IntroState::update(sf::RenderWindow& window) {

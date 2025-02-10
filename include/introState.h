@@ -10,7 +10,7 @@
 
 namespace SoftyPoker {
 
-class IntroState : public GameState { // Ensure IntroState inherits from GameState
+class IntroState : public GameState {
 public:
     IntroState(SoundManager& sp, sf::RenderWindow& window);
 
@@ -24,7 +24,7 @@ private:
     void scrollText(sf::RenderWindow& window, sf::Time elapsed);
 
     SoundManager& soundPlayer;
-    sf::Font font; // Declare font variable
+    sf::Font font;
     TextScroll firstLine;
     TextScroll secondLine;
     LogoAnimation logoAnimation;
@@ -39,11 +39,12 @@ private:
     float fadeDuration;
     float pauseDuration;
     sf::Time totalElapsed;
-    const float firstLineSpeed = 100.0f;
-    const float secondLineSpeed = 100.0f;
-    const float horizontalOffset = 10.0f;
+    float firstLineSpeed;
+    float secondLineSpeed;
+    sf::Text instructionText; // Add this line
 };
 
 } // namespace SoftyPoker
 
 #endif // INTRO_STATE_H
+

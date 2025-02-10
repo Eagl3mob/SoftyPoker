@@ -1,5 +1,5 @@
 #include <SFML/Graphics.hpp>
-#include <cmath> // Include the cmath library for the sin function
+#include <cmath>
 #include "TextScroll.h"
 
 TextScroll::TextScroll(const sf::Font& font, const std::string& textStr, float speed, float startY, float windowWidth)

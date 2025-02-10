@@ -3,6 +3,7 @@
 
 #include "GameState.h"
 #include "SoundManager.h"
+#include "ButtonHandle.h"
 
 namespace SoftyPoker {
     class MainGameState : public GameState {
@@ -17,7 +18,18 @@ namespace SoftyPoker {
         sf::Clock clock;
         sf::Texture backgroundTexture;
         sf::Sprite backgroundSprite;
+        ButtonHandle buttonHandle;
+
+        void startGame();
+        void bet();
+        void deal();
+        void collect();
+        void enterGamblingState();
+        void guessSmall();
+        void guessHigh();
+        void holdCard(int cardIndex);
     };
 }
 
 #endif // MAINGAMESTATE_H
+

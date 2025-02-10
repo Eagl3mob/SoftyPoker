@@ -5,13 +5,27 @@ namespace SoftyPoker {
 
 MainGameState::MainGameState(SoundManager& sp, sf::RenderWindow& window, const std::string& backgroundPath)
     : soundPlayer(sp) {
+    // Initialize ButtonHandle and add button functionalities
+    buttonHandle.addButton(sf::Keyboard::S, [this]() { startGame(); });
+    buttonHandle.addButton(sf::Keyboard::B, [this]() { bet(); });
+    buttonHandle.addButton(sf::Keyboard::D, [this]() { deal(); });
+    buttonHandle.addButton(sf::Keyboard::C, [this]() { collect(); });
+    buttonHandle.addButton(sf::Keyboard::G, [this]() { enterGamblingState(); });
+    buttonHandle.addButton(sf::Keyboard::Left, [this]() { guessSmall(); });
+    buttonHandle.addButton(sf::Keyboard::Right, [this]() { guessHigh(); });
 
+    // Initialize separate buttons for holding cards
+    buttonHandle.addButton(sf::Keyboard::Num1, [this]() { holdCard(1); });
+    buttonHandle.addButton(sf::Keyboard::Num2, [this]() { holdCard(2); });
+    buttonHandle.addButton(sf::Keyboard::Num3, [this]() { holdCard(3); });
+    buttonHandle.addButton(sf::Keyboard::Num4, [this]() { holdCard(4); });
+    buttonHandle.addButton(sf::Keyboard::Num5, [this]() { holdCard(5); });
+
+    // Load background texture
     if (!backgroundTexture.loadFromFile(backgroundPath)) {
         throw std::runtime_error("Failed to load background texture: " + backgroundPath);
     }
     backgroundSprite.setTexture(backgroundTexture);
-
-    // Initialize main game-specific components
 }
 
 void MainGameState::update(sf::RenderWindow& window) {
@@ -28,12 +42,21 @@ void MainGameState::draw(sf::RenderWindow& window) {
 }
 
 void MainGameState::handleEvent(sf::Event& event, sf::RenderWindow& window) {
+    buttonHandle.handleEvent(event);
     if (event.type == sf::Event::Closed) {
         window.close();
     }
-    // Handle main game-specific events
+    // Handle other events
 }
 
-} // namespace SoftyPoker
+void MainGameState::startGame() { /* Start game logic */ }
+void MainGameState::bet() { /* Betting logic */ }
+void MainGameState::deal() { /* Dealing cards logic */ }
+void MainGameState::collect() { /* Collect winnings logic */ }
+void MainGameState::enterGamblingState() { /* Enter gambling state logic */ }
+void MainGameState::guessSmall() { /* Guess small logic */ }
+void MainGameState::guessHigh() { /* Guess high logic */ }
+void MainGameState::holdCard(int cardIndex) { /* Hold card logic */ }
 
+} // namespace SoftyPoker
 

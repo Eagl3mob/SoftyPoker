@@ -9,14 +9,24 @@ namespace SoftyPoker {
 IntroState::IntroState(SoundManager& sp, sf::RenderWindow& window)
     : soundPlayer(sp),
       font(),
-      firstLine(TextScroll(font, "Hello and welcome to SoftyPoker project intro. Starting in 2025 with the help from AI, using SFML2, Code::Blocks and many other open-source great goodies. SoftyPoker's experience is inspired by various card games and new technology.", 200.0f, 50.0f, window.getSize().x)),
-      secondLine(TextScroll(font, "Softy Projects © 2025 by T.E. & E.M. is licensed under a Creative Commons Attribution 4.0 International License (CC BY 4.0). This includes all sub-projects such as SoftyPoker.", 400.0f, 100.0f, window.getSize().x)),
+      firstLine(TextScroll(font, "Hello and welcome to SoftyPoker project intro. Starting in 2025 with the help from AI, using SFML2, Code::Blocks and many other open-source great goodies. SoftyPoker is a fun project to help learn and create together.", 100.0f, window.getSize().y / 1.2f, window.getSize().x)),
+      secondLine(TextScroll(font, "Softy Projects © 2025 by T.E. & E.M. is licensed under a Creative Commons Attribution 4.0 International License (CC BY 4.0). This includes all sub-projects such as SoftyPoker.", 200.0f, window.getSize().y / 1.1f, window.getSize().x)),
       logoAnimation(logoTexture, 12.0f),
       backgroundHandler(backgroundTexture),
       fadeDuration(6.0f),
       pauseDuration(2.0f),
-      totalElapsed(sf::Time::Zero) {
-      firstLine.setTextColor(sf::Color(144, 238, 144));
+      totalElapsed(sf::Time::Zero),
+      firstLineSpeed(140.0f),
+      secondLineSpeed(200.0f) {
+
+    firstLine.setTextColor(sf::Color(144, 238, 144));
+    secondLine.setTextColor(sf::Color(144, 238, 144));
+
+    // Initialize instructionText
+    instructionText.setFont(font);
+    instructionText.setString("S to Start Game...Not YET !!!");
+    instructionText.setCharacterSize(50);
+    instructionText.setFillColor(sf::Color(173, 216, 230)); // Set the color to light blue
 
     backgroundFiles = {
         getAssetPath("images/backgrounds/blond_girl.png"),
@@ -84,10 +94,13 @@ void IntroState::resizeElements(sf::RenderWindow& window) {
     firstLine.setPosition(windowWidth, windowHeight / 1.2f);
 
     secondLine.setCharacterSize(static_cast<unsigned int>(40 * (windowWidth / 1280.f)));
-    secondLine.setPosition(firstLine.getPosition().x + 10.0f, firstLine.getPosition().y + firstLine.getLocalBounds().height + 5);
+    secondLine.setPosition(windowWidth, windowHeight / 1.1f);
 
     firstLine.setWindowWidth(windowWidth);
     secondLine.setWindowWidth(windowWidth);
+
+    // Set the position of instructionText to the top left
+    instructionText.setPosition(10.0f, 10.0f);
 }
 
 void IntroState::update(sf::RenderWindow& window) {
@@ -95,7 +108,8 @@ void IntroState::update(sf::RenderWindow& window) {
     totalElapsed += elapsed;
     logoAnimation.update(elapsed);
     firstLine.update(elapsed, totalElapsed);
-    secondLine.update(elapsed, totalElapsed); // Call with two parameters
+    secondLine.update(elapsed, totalElapsed);
+    scrollText(window, elapsed);
     animateLogo();
 }
 
@@ -105,6 +119,7 @@ void IntroState::draw(sf::RenderWindow& window) {
     window.draw(firstLine);
     window.draw(logoSprite);
     window.draw(secondLine);
+    window.draw(instructionText); // Draw the instructionText
     window.display();
 }
 
@@ -149,7 +164,7 @@ void IntroState::scrollText(sf::RenderWindow& window, sf::Time elapsed) {
     sf::Vector2f secondLinePos = secondLine.getPosition();
     secondLinePos.x -= secondLineSpeed * elapsed.asSeconds();
     if (secondLinePos.x + secondLine.getLocalBounds().width < 0) {
-        secondLinePos.x = window.getSize().x + 10.0f;
+        secondLinePos.x = window.getSize().x;
     }
     secondLine.setPosition(secondLinePos);
 }

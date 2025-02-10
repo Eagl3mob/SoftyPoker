@@ -9,7 +9,7 @@ public:
 
     void setTextColor(const sf::Color& color);
     void enableSmoothColorTransition(bool enable);
-    void update(sf::Time elapsed, sf::Time totalElapsed); // Ensure it has both parameters
+    void update(sf::Time elapsed, sf::Time totalElapsed);
     void setCharacterSize(unsigned int size);
     void setPosition(float x, float y);
     void setPosition(sf::Vector2f position);
@@ -28,3 +28,4 @@ private:
 };
 
 #endif // TEXT_SCROLL_H
+

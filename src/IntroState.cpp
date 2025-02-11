@@ -28,15 +28,20 @@ IntroState::IntroState(SoundManager& sp, sf::RenderWindow& window)
     instructionText.setCharacterSize(50);
     instructionText.setFillColor(sf::Color(173, 216, 230)); // Set the color to light blue
 
+
     backgroundFiles = {
-        getAssetPath("images/backgrounds/blond_girl.png"),
-        getAssetPath("images/backgrounds/claws_girl.png"),
-        getAssetPath("images/backgrounds/fantasy_girl.png"),
-        getAssetPath("images/backgrounds/fire_girl.png"),
-        getAssetPath("images/backgrounds/skul_girl.png"),
-        getAssetPath("images/backgrounds/sofa_girl.png"),
-        getAssetPath("images/backgrounds/bikini_girl.png")
-    };
+    getAssetPath("images/backgrounds/image1.png"),
+    getAssetPath("images/backgrounds/image2.png"),
+    getAssetPath("images/backgrounds/image3.png"),
+    getAssetPath("images/backgrounds/image4.png"),
+    getAssetPath("images/backgrounds/image5.png"),
+    getAssetPath("images/backgrounds/image6.png"),
+    getAssetPath("images/backgrounds/image7.png")
+};
+
+
+
+
 
     std::random_device rd;
     std::mt19937 g(rd());
